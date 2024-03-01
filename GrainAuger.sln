@@ -1,0 +1,21 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{D4912921-9691-44C9-A182-32217FD5BF45}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrainAuger.Examples.Abstractions", "Examples\GrainAuger.Examples.Abstractions\GrainAuger.Examples.Abstractions.csproj", "{805B3921-C227-4F0B-A82F-54585BD6DB78}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{805B3921-C227-4F0B-A82F-54585BD6DB78} = {D4912921-9691-44C9-A182-32217FD5BF45}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{805B3921-C227-4F0B-A82F-54585BD6DB78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{805B3921-C227-4F0B-A82F-54585BD6DB78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{805B3921-C227-4F0B-A82F-54585BD6DB78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{805B3921-C227-4F0B-A82F-54585BD6DB78}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
