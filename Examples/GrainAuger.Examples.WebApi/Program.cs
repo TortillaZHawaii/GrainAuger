@@ -26,20 +26,28 @@ app.UseHttpsRedirection();
 
 app.Map("/dashboard", configuration => { configuration.UseOrleansDashboard(); });
 
-Guid inputStreamGuid = Guid.NewGuid();
-Guid outputStreamGuid = Guid.NewGuid();
+Guid producerStreamGuid = Guid.NewGuid();
+Guid selectorStreamGuid = Guid.NewGuid();
+Guid whereStreamGuid = Guid.NewGuid();
+
 string selectorKey = "Selector";
+string whereKey = "Where";
 string producerKey = "Producer";
+
 string streamNamespace = "Auger";
 
 app.MapGet("/start", async (IGrainFactory factory) =>
 {
     var producerGrain = factory.GetGrain<IProducerGrain>(producerKey);
-    await producerGrain.StartAsync(providerName, streamNamespace, inputStreamGuid);
+    await producerGrain.StartAsync(providerName, streamNamespace, producerStreamGuid);
 
     var selectAugerGrain = factory.GetGrain<ISelectAuger<int, int>>(selectorKey);
     await selectAugerGrain.StartAsync(providerName, streamNamespace,
-        inputStreamGuid, outputStreamGuid);
+        producerStreamGuid, selectorStreamGuid);
+    
+    var whereAugerGrain = factory.GetGrain<IWhereAuger<int>>(whereKey);
+    await whereAugerGrain.StartAsync(providerName, streamNamespace,
+        selectorStreamGuid, whereStreamGuid);
 
     return "Started";
 });
@@ -51,6 +59,9 @@ app.MapGet("/stop", async (IGrainFactory factory) =>
 
     var selectAugerGrain = factory.GetGrain<ISelectAuger<int, int>>(selectorKey);
     await selectAugerGrain.StopAsync();
+    
+    var whereAugerGrain = factory.GetGrain<IWhereAuger<int>>(whereKey);
+    await whereAugerGrain.StopAsync();
 
     return "Stopped";
 });
