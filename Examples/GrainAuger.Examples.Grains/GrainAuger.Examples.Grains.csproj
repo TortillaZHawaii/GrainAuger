@@ -7,7 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Orleans.Sdk" Version="8.0.0" />
+      <ProjectReference Include="..\GrainAuger.Examples.Abstractions\GrainAuger.Examples.Abstractions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Orleans.Streaming" Version="8.0.0" />
     </ItemGroup>
 
 </Project>
