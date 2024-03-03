@@ -12,6 +12,8 @@ builder.Host.UseOrleans(siloBuilder =>
     siloBuilder.UseLocalhostClustering();
     siloBuilder.AddMemoryGrainStorageAsDefault();
     siloBuilder
+        .AddMemoryGrainStorage("Auger");
+    siloBuilder
         .AddMemoryGrainStorage("PubSubStore")
         .AddMemoryStreams(providerName);
     siloBuilder.UseDashboard(x => x.HostSelf = true);
@@ -29,10 +31,12 @@ app.Map("/dashboard", configuration => { configuration.UseOrleansDashboard(); })
 Guid producerStreamGuid = Guid.NewGuid();
 Guid selectorStreamGuid = Guid.NewGuid();
 Guid whereStreamGuid = Guid.NewGuid();
+Guid distinctStreamGuid = Guid.NewGuid();
 
 string selectorKey = "Selector";
 string whereKey = "Where";
 string producerKey = "Producer";
+string distinctKey = "Distinct";
 
 string streamNamespace = "Auger";
 
@@ -40,10 +44,14 @@ app.MapGet("/start", async (IGrainFactory factory) =>
 {
     var producerGrain = factory.GetGrain<IProducerGrain>(producerKey);
     await producerGrain.StartAsync(providerName, streamNamespace, producerStreamGuid);
+    
+    var distinctAugerGrain = factory.GetGrain<IDistinctAuger<int>>(distinctKey);
+    await distinctAugerGrain.StartAsync(providerName, streamNamespace,
+        producerStreamGuid, distinctStreamGuid);
 
     var selectAugerGrain = factory.GetGrain<ISelectAuger<int, int>>(selectorKey);
     await selectAugerGrain.StartAsync(providerName, streamNamespace,
-        producerStreamGuid, selectorStreamGuid);
+        distinctStreamGuid, selectorStreamGuid);
     
     var whereAugerGrain = factory.GetGrain<IWhereAuger<int>>(whereKey);
     await whereAugerGrain.StartAsync(providerName, streamNamespace,
@@ -56,6 +64,9 @@ app.MapGet("/stop", async (IGrainFactory factory) =>
 {
     var producerGrain = factory.GetGrain<IProducerGrain>(producerKey);
     await producerGrain.StopAsync();
+    
+    var distinctAugerGrain = factory.GetGrain<IDistinctAuger<int>>(distinctKey);
+    await distinctAugerGrain.StopAsync();
 
     var selectAugerGrain = factory.GetGrain<ISelectAuger<int, int>>(selectorKey);
     await selectAugerGrain.StopAsync();
