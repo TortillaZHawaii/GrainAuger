@@ -32,11 +32,13 @@ Guid producerStreamGuid = Guid.NewGuid();
 Guid selectorStreamGuid = Guid.NewGuid();
 Guid whereStreamGuid = Guid.NewGuid();
 Guid distinctStreamGuid = Guid.NewGuid();
+Guid chunkStreamGuid = Guid.NewGuid();
 
 string selectorKey = "Selector";
 string whereKey = "Where";
 string producerKey = "Producer";
 string distinctKey = "Distinct";
+string chunkKey = "Chunk";
 
 string streamNamespace = "Auger";
 
@@ -56,6 +58,10 @@ app.MapGet("/start", async (IGrainFactory factory) =>
     var whereAugerGrain = factory.GetGrain<IWhereAuger<int>>(whereKey);
     await whereAugerGrain.StartAsync(providerName, streamNamespace,
         selectorStreamGuid, whereStreamGuid);
+    
+    var chunkAugerGrain = factory.GetGrain<IChunkAuger<int>>(chunkKey);
+    await chunkAugerGrain.StartAsync(providerName, streamNamespace,
+        whereStreamGuid, chunkStreamGuid);
 
     return "Started";
 });
@@ -73,6 +79,9 @@ app.MapGet("/stop", async (IGrainFactory factory) =>
     
     var whereAugerGrain = factory.GetGrain<IWhereAuger<int>>(whereKey);
     await whereAugerGrain.StopAsync();
+    
+    var chunkAugerGrain = factory.GetGrain<IChunkAuger<int>>(chunkKey);
+    await chunkAugerGrain.StopAsync();
 
     return "Stopped";
 });

@@ -28,7 +28,7 @@ public class ProducerGrain : Grain, IProducerGrain
         _logger.LogInformation("StartAsync");
         _outputStream = this.GetStreamProvider(providerName)
             .GetStream<int>(StreamId.Create(streamNamespace, outputStreamGuid));
-        _timer = this.RegisterTimer(OnTimer, null!, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+        _timer = this.RegisterTimer(OnTimer, null!, TimeSpan.Zero, TimeSpan.FromMicroseconds(100));
         return Task.CompletedTask;
     }
 
