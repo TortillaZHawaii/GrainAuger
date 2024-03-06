@@ -11,6 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.Orleans.EventSourcing" Version="8.0.0" />
       <PackageReference Include="Microsoft.Orleans.Streaming" Version="8.0.0" />
     </ItemGroup>
 

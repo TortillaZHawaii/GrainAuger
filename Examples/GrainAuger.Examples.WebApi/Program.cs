@@ -86,6 +86,13 @@ app.MapGet("/stop", async (IGrainFactory factory) =>
     return "Stopped";
 });
 
+app.MapPost("/counter", async (IGrainFactory factory) =>
+{
+    
+    var grain = factory.GetGrain<ICounterJournaledGrain>("");
+    return "Incremented";
+});
+
 app.Run();
 
 app.Run();
