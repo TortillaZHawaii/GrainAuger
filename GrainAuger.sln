@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceGenerators.Sample", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceGenerators.Tests", "Examples\CodeGen\SourceGenerators\SourceGenerators.Tests\SourceGenerators.Tests.csproj", "{4C15D41C-2BA9-4FBD-B814-99B12D4F4F9D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrainAuger.Examples.Aspire", "Examples\GrainAuger.Examples.Aspire\GrainAuger.Examples.Aspire.csproj", "{6A48CBB0-53FB-41C2-82BF-9DFF644B91EC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +31,7 @@ Global
 		{58F002D4-BA42-4F7D-8513-B90E9D17147B} = {131C6177-A08B-43A8-93AA-A8D1C5AAF48D}
 		{3DDAD323-A8D0-408F-A6B3-032E7F40DE89} = {131C6177-A08B-43A8-93AA-A8D1C5AAF48D}
 		{4C15D41C-2BA9-4FBD-B814-99B12D4F4F9D} = {131C6177-A08B-43A8-93AA-A8D1C5AAF48D}
+		{6A48CBB0-53FB-41C2-82BF-9DFF644B91EC} = {D4912921-9691-44C9-A182-32217FD5BF45}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{805B3921-C227-4F0B-A82F-54585BD6DB78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -55,5 +58,9 @@ Global
 		{4C15D41C-2BA9-4FBD-B814-99B12D4F4F9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4C15D41C-2BA9-4FBD-B814-99B12D4F4F9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C15D41C-2BA9-4FBD-B814-99B12D4F4F9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A48CBB0-53FB-41C2-82BF-9DFF644B91EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A48CBB0-53FB-41C2-82BF-9DFF644B91EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A48CBB0-53FB-41C2-82BF-9DFF644B91EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A48CBB0-53FB-41C2-82BF-9DFF644B91EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
