@@ -9,6 +9,7 @@ var storage = builder.AddRedis("storage");
 builder.AddProject<GrainAuger_Examples_WebApi>("silo1")
     // .WithReference(messaging)
     .WithReference(membership)
-    .WithReference(storage);
-    
+    .WithReference(storage)
+    .WithReplicas(3);
+
 builder.Build().Run();
