@@ -14,4 +14,8 @@
         <PackageReference Include="Aspire.StackExchange.Redis" Version="8.0.0-preview.3.24105.21" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\GrainAuger.Examples.WebApi\GrainAuger.Examples.WebApi.csproj" />
+    </ItemGroup>
+
 </Project>
