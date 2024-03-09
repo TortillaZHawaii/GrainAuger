@@ -25,6 +25,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\GrainAuger.Example.ServiceDefaults\GrainAuger.Example.ServiceDefaults.csproj" />
       <ProjectReference Include="..\GrainAuger.Examples.Grains\GrainAuger.Examples.Grains.csproj" />
     </ItemGroup>
 
