@@ -9,6 +9,9 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.2"/>
+        <PackageReference Include="Microsoft.Orleans.Server" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Orleans.Streaming" Version="8.0.0" />
+        <PackageReference Include="OrleansDashboard" Version="8.0.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
     </ItemGroup>
 
