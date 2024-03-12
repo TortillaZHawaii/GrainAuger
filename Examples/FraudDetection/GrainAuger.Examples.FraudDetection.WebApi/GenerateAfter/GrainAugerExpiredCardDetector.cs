@@ -17,7 +17,7 @@ public class GrainAugerExpiredCardDetector
 // this would wake up ALL listeners of different types, but with the same key
     IAsyncObserver<CardTransaction>
 {
-    private ExpiredCardDetector _expiredCardDetector; // this is the actual detector, this should be generated
+    private readonly ExpiredCardDetector _expiredCardDetector; // this is the actual detector, this should be generated
     
     private IAsyncStream<Alert> _outputStream; // this is the output stream, this should be generated
     
