@@ -21,17 +21,23 @@ public class GrainAugerExpiredCardDetector
     
     private IAsyncStream<Alert> _outputStream; // this is the output stream, this should be generated
     
+    private readonly ILogger<GrainAugerExpiredCardDetector> _logger;
+    
     public GrainAugerExpiredCardDetector(
         // We could inject here some dependencies for the detector
+        ILogger<GrainAugerExpiredCardDetector> logger
         )
     {
         _expiredCardDetector = new ExpiredCardDetector();
+        _logger = logger;
     }
     
     // the rest is pretty much boilerplate
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Activating...");
+        
         await base.OnActivateAsync(cancellationToken);
 
         var inputStreamProvider = this.GetStreamProvider("Kafka");
@@ -43,14 +49,20 @@ public class GrainAugerExpiredCardDetector
         _outputStream = outputStreamProvider.GetStream<Alert>(outputStreamId);        
 
         await inputStream.SubscribeAsync(this);
+        
+        _logger.LogInformation("Activated");
     }
 
     public async Task OnNextAsync(CardTransaction item, StreamSequenceToken token = null)
     {
+        _logger.LogInformation("Processing {Transaction}", item);
         // chain the detectors
         await _expiredCardDetector.ProcessAsync(item, 
-            async alert => await _outputStream.OnNextAsync(alert)
-        );
+            async alert =>
+            {
+                await _outputStream.OnNextAsync(alert);
+                _logger.LogInformation("Alert: {Alert}", alert);
+            });
     }
 
     public Task OnCompletedAsync()
