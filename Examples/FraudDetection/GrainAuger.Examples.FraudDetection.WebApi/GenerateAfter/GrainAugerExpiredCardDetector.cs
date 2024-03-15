@@ -10,8 +10,8 @@ namespace GrainAuger.Examples.FraudDetection.WebApi.GenerateAfter;
 [ImplicitStreamSubscription("GrainAuger_KafkaInput")] // stream namespace input should be the same as the output of the previous grain
 public class GrainAugerExpiredCardDetector 
     : Grain, // to make use of the Orleans runtime
-    IGrainWithIntegerKey, // key type depends on keyed stream type, for example when we run KeyedStream based on CardId
-// we should use int, this is required for auto activation
+    IGrainWithStringKey, // key type depends on keyed stream type, for example when we run KeyedStream based on CardId
+// we should use string, this is required for auto activation
 // EXAMPLE:
 // we produce to stream namespace: GrainAuger_vXXX_EntryPoint_Output, to streamId: CardId
 // this would wake up ALL listeners of different types, but with the same key

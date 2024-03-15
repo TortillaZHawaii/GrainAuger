@@ -7,7 +7,7 @@ namespace GrainAuger.Examples.FraudDetection.WebApi.GenerateAfter;
 
 [ImplicitStreamSubscription("GrainAuger_KafkaInput")]
 public class GrainAugerNormalDistributionDetector
-    : Grain, IGrainWithIntegerKey, IAsyncObserver<CardTransaction>
+    : Grain, IGrainWithStringKey, IAsyncObserver<CardTransaction>
 {
     private readonly NormalDistributionDetector _normalDistributionDetector;
     

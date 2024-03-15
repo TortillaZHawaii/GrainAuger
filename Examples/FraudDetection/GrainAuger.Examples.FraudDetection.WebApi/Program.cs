@@ -1,3 +1,5 @@
+using GrainAuger.Examples.FraudDetection.WebApi.Producer;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -5,40 +7,45 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Host.UseOrleans(siloBuilder =>
+{
+    siloBuilder
+        .AddMemoryGrainStorage("PubSubStore")
+        .AddMemoryGrainStorage("Auger");
+
+    siloBuilder.UseLocalhostClustering();
+
+    siloBuilder.AddMemoryStreams("Kafka");
+
+    siloBuilder.UseDashboard(x => x.HostSelf = true);
+});
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
+app.Map("/dashboard", configuration =>
     {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
+        configuration.UseOrleansDashboard(); 
+    });
+
+app.MapGet("/start", (IGrainFactory grainFactory) =>
+    {
+        var producer = grainFactory.GetGrain<IProducerGrain>("1");
+        producer.StartAsync();
     })
-    .WithName("GetWeatherForecast")
+    .WithName("StartProducing")
+    .WithOpenApi();
+
+app.MapGet("/stop", (IGrainFactory grainFactory) =>
+    {
+        var producer = grainFactory.GetGrain<IProducerGrain>("1");
+        producer.StopAsync();
+    })
+    .WithName("StopProducing")
     .WithOpenApi();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
