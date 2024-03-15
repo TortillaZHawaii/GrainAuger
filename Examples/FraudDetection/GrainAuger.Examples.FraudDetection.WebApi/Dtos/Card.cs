@@ -1,5 +1,6 @@
 namespace GrainAuger.Examples.FraudDetection.WebApi.Dtos;
 
+[GenerateSerializer]
 public record Card(
     string Number,
     string Type,
