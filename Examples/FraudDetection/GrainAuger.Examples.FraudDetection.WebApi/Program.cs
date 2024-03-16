@@ -11,7 +11,8 @@ builder.Host.UseOrleans(siloBuilder =>
 {
     siloBuilder
         .AddMemoryGrainStorage("PubSubStore")
-        .AddMemoryGrainStorage("Auger");
+        .AddMemoryGrainStorage("AugerStore")
+        .AddMemoryGrainStorageAsDefault();
 
     siloBuilder.UseLocalhostClustering();
 
