@@ -1,9 +1,7 @@
-using System.Runtime.InteropServices.ComTypes;
 using GrainAuger.Examples.FraudDetection.WebApi.Dtos;
 using Orleans.Runtime;
-using Orleans.Streams;
 
-namespace GrainAuger.Examples.FraudDetection.WebApi.Producer;
+namespace GrainAuger.Examples.FraudDetection.WebApi.Utils;
 
 public interface IProducerGrain : IGrainWithStringKey
 {
@@ -31,15 +29,16 @@ public class ProducerGrain : Grain, IProducerGrain
 
     private async Task OnTimer(object? state)
     {
-        var card = new Card("1234", "Debit", 12, 26, "123");
+        var card = new Card("1234", "Debit", 12, 2026, "123");
         var owner = new CardOwner(1, "John", "Smith");
         var transaction = new CardTransaction(12, 100, card, owner);
+        var guid = Guid.Empty; // For some reason MUST be an GUID, which is a shame really
         
         _logger.LogInformation("OnTimer: {Transaction}", transaction);
 
         // Route by card number
         var outputStream = this.GetStreamProvider("Kafka")
-            .GetStream<CardTransaction>(StreamId.Create("GrainAuger_KafkaInput", card.Number));
+            .GetStream<CardTransaction>(StreamId.Create("GrainAuger_KafkaInput", guid));
         
         await outputStream.OnNextAsync(transaction);
     }

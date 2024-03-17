@@ -1,4 +1,4 @@
-using GrainAuger.Examples.FraudDetection.WebApi.Producer;
+using GrainAuger.Examples.FraudDetection.WebApi.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
