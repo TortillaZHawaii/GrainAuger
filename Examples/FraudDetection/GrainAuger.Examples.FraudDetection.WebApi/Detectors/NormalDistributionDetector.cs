@@ -35,23 +35,18 @@ public class NormalDistributionDetector : Auger<CardTransaction, Alert>
         _state.State.MVariance += (input.Amount - previousAverage) * (input.Amount - _state.State.Average);
 
         await _state.WriteStateAsync();
-
-        var alertTask = Task.Run(async () =>
+        
+        if (_state.State.Count > CountCutOff)
         {
-            if (_state.State.Count > CountCutOff)
+            var variance = _state.State.MVariance / (_state.State.Count - 1);
+            var standardDeviation = Math.Sqrt(variance);
+            var zScore = (input.Amount - _state.State.Average) / standardDeviation;
+
+            if (zScore > ZScoreCutOff)
             {
-                var variance = _state.State.MVariance / (_state.State.Count - 1);
-                var standardDeviation = Math.Sqrt(variance);
-                var zScore = (input.Amount - _state.State.Average) / standardDeviation;
-
-                if (zScore > ZScoreCutOff)
-                {
-                    var alert = new Alert(input, "Normal distribution anomaly detected");
-                    await collect(alert);
-                }
+                var alert = new Alert(input, "Normal distribution anomaly detected");
+                await collect(alert);
             }
-        });
-
-        await Task.WhenAll(_state.WriteStateAsync(), alertTask);
+        }
     }
 }
