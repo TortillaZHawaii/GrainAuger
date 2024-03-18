@@ -42,6 +42,8 @@ public class GrainAugerOverLimitDetector
         var outputStreamId = StreamId.Create("GrainAuger_OverLimitDetector_Output", this.GetPrimaryKey());
         _outputStream = outputStreamProvider.GetStream<Alert>(outputStreamId);        
 
+        _overLimitDetector.RegisterTimerHandle = this.RegisterTimer;
+        
         await inputStream.SubscribeAsync(this);
     }
 

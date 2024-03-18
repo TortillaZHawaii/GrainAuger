@@ -1,5 +1,5 @@
 using GrainAuger.Examples.FraudDetection.WebApi.Dtos;
-using GrainAuger.Examples.FraudDetection.WebApi.Grains;
+using GrainAuger.Examples.FraudDetection.WebApi.GenerateBefore;
 
 namespace GrainAuger.Examples.FraudDetection.WebApi.Detectors;
 

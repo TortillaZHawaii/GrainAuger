@@ -34,10 +34,11 @@ public class GrainAugerNormalDistributionDetector
         var outputStreamId = StreamId.Create("GrainAuger_NormalDistributionDetector_Output", this.GetPrimaryKey());
         _outputStream = outputStreamProvider.GetStream<Alert>(outputStreamId);
 
+        _normalDistributionDetector.RegisterTimerHandle = this.RegisterTimer;
+
         await inputStream.SubscribeAsync(this);
     }
-    
-    
+
     public async Task OnNextAsync(CardTransaction item, StreamSequenceToken? token = null)
     {
         await _normalDistributionDetector.ProcessAsync(item, 

@@ -46,8 +46,10 @@ public class GrainAugerExpiredCardDetector
         
         var outputStreamProvider = this.GetStreamProvider("Kafka");
         var outputStreamId = StreamId.Create("GrainAuger_ExpiredCardDetector_Output", this.GetPrimaryKey());
-        _outputStream = outputStreamProvider.GetStream<Alert>(outputStreamId);        
+        _outputStream = outputStreamProvider.GetStream<Alert>(outputStreamId);
 
+        _expiredCardDetector.RegisterTimerHandle = this.RegisterTimer;
+        
         await inputStream.SubscribeAsync(this);
         
         _logger.LogInformation("Activated");
