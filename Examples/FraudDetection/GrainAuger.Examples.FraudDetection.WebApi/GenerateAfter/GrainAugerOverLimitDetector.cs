@@ -21,10 +21,14 @@ public class GrainAugerOverLimitDetector
     
     private IAsyncStream<Alert> _outputStream; // this is the output stream, this should be generated
     
+    private ILogger<GrainAugerOverLimitDetector> _logger;
+    
     public GrainAugerOverLimitDetector(
         // We could inject here some dependencies for the detector
+        ILogger<GrainAugerOverLimitDetector> logger
         )
     {
+        _logger = logger;
         _overLimitDetector = new OverLimitDetector();
     }
     
@@ -50,9 +54,14 @@ public class GrainAugerOverLimitDetector
     public async Task OnNextAsync(CardTransaction item, StreamSequenceToken token = null)
     {
         // chain the detectors
+        _logger.LogInformation("Processing {Transaction}", item);
+
         await _overLimitDetector.ProcessAsync(item, 
-            async alert => await _outputStream.OnNextAsync(alert)
-        );
+            async alert =>
+            {
+                await _outputStream.OnNextAsync(alert);
+                _logger.LogInformation("Alert: {Alert}", alert);
+            });
     }
 
     public Task OnCompletedAsync()

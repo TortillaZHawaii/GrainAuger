@@ -14,6 +14,7 @@ public class ProducerGrain : Grain, IProducerGrain
 {
     private readonly ILogger _logger;
     private IDisposable? _timer;
+    private readonly Random _random = new();
 
     public ProducerGrain(ILoggerFactory loggerFactory)
     {
@@ -23,15 +24,16 @@ public class ProducerGrain : Grain, IProducerGrain
     public Task StartAsync()
     {
         _logger.LogInformation("StartAsync");
-        _timer = this.RegisterTimer(OnTimer, null!, TimeSpan.Zero, TimeSpan.FromSeconds(10));
+        _timer = this.RegisterTimer(OnTimer, null!, TimeSpan.Zero, TimeSpan.FromMilliseconds(500));
         return Task.CompletedTask;
     }
 
     private async Task OnTimer(object? state)
     {
-        var card = new Card("1234", "Debit", 12, 2026, "123");
+        int amount = _random.Next(1, 1000);
+        var card = new Card("1234", "Debit", 12, 2020, "123");
         var owner = new CardOwner(1, "John", "Smith");
-        var transaction = new CardTransaction(12, 100, card, owner);
+        var transaction = new CardTransaction(amount, 100, card, owner);
         var guid = Guid.Empty; // For some reason MUST be an GUID, which is a shame really
         
         _logger.LogInformation("OnTimer: {Transaction}", transaction);
