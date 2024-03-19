@@ -10,7 +10,7 @@ namespace GrainAuger.Examples.FraudDetection.WebApi.GenerateAfter;
 [ImplicitStreamSubscription("GrainAuger_KafkaInput")] // stream namespace input should be the same as the output of the previous grain
 public class GrainAugerExpiredCardDetector 
     : Grain, // to make use of the Orleans runtime
-    IGrainWithGuidKey, // key type depends on keyed stream type, for example when we run KeyedStream based on CardId
+    IGrainWithStringKey, // key type depends on keyed stream type, for example when we run KeyedStream based on CardId
 // we should use string, this is required for auto activation
 // EXAMPLE:
 // we produce to stream namespace: GrainAuger_vXXX_EntryPoint_Output, to streamId: CardId
@@ -41,11 +41,11 @@ public class GrainAugerExpiredCardDetector
         await base.OnActivateAsync(cancellationToken);
 
         var inputStreamProvider = this.GetStreamProvider("Kafka");
-        var inputStreamId = StreamId.Create("GrainAuger_KafkaInput", this.GetPrimaryKey());
+        var inputStreamId = StreamId.Create("GrainAuger_KafkaInput", this.GetPrimaryKeyString());
         var inputStream = inputStreamProvider.GetStream<CardTransaction>(inputStreamId);
         
         var outputStreamProvider = this.GetStreamProvider("Kafka");
-        var outputStreamId = StreamId.Create("GrainAuger_ExpiredCardDetector_Output", this.GetPrimaryKey());
+        var outputStreamId = StreamId.Create("GrainAuger_ExpiredCardDetector_Output", this.GetPrimaryKeyString());
         _outputStream = outputStreamProvider.GetStream<Alert>(outputStreamId);
 
         _expiredCardDetector.RegisterTimerHandle = this.RegisterTimer;

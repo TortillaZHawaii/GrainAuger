@@ -21,12 +21,12 @@ public class RoundRobinLoadBalancerAuger<T> : Auger<T, T>
         // we need to change the output stream depending on the pool
         var guid = _pool[_index];
         _index = _index + 1 >= _pool.Length ? 0 : _index + 1;
-
+        throw new NotImplementedException("This is a placeholder for the actual implementation");
         var outputStreamId = StreamId.Create("GrainAuger_XXX", guid);
         // we would need to punch a hole in the grain to get the stream provider
         // and use output stream instead of collect
-        var outputStream = GetStreamProvider("AugerStreamProvider").GetStream<T>(outputStreamId);
-        await outputStream.OnNextAsync(input);
+        //var outputStream = GetStreamProvider("AugerStreamProvider").GetStream<T>(outputStreamId);
+        //await outputStream.OnNextAsync(input);
     }
     
     private static Guid Int2Guid(int value)

@@ -34,13 +34,12 @@ public class ProducerGrain : Grain, IProducerGrain
         var card = new Card("1234", "Debit", 12, 2020, "123");
         var owner = new CardOwner(1, "John", "Smith");
         var transaction = new CardTransaction(amount, 100, card, owner);
-        var guid = Guid.Empty; // For some reason MUST be an GUID, which is a shame really
         
         _logger.LogInformation("OnTimer: {Transaction}", transaction);
 
         // Route by card number
         var outputStream = this.GetStreamProvider("Kafka")
-            .GetStream<CardTransaction>(StreamId.Create("GrainAuger_KafkaInput", guid));
+            .GetStream<CardTransaction>(StreamId.Create("GrainAuger_KafkaInput", card.Number));
         
         await outputStream.OnNextAsync(transaction);
     }

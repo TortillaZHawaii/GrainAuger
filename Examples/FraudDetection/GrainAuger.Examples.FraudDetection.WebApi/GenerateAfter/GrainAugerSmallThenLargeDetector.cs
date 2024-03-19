@@ -6,7 +6,7 @@ using Orleans.Streams;
 namespace GrainAuger.Examples.FraudDetection.WebApi.GenerateAfter;
 
 [ImplicitStreamSubscription("GrainAuger_KafkaInput")]
-public class GrainAugerSmallThenLargeDetector : Grain, IGrainWithGuidKey, IAsyncObserver<CardTransaction>
+public class GrainAugerSmallThenLargeDetector : Grain, IGrainWithStringKey, IAsyncObserver<CardTransaction>
 {
     private readonly SmallThenLargeDetector _smallThenLargeDetector;
     
@@ -32,11 +32,11 @@ public class GrainAugerSmallThenLargeDetector : Grain, IGrainWithGuidKey, IAsync
         await base.OnActivateAsync(cancellationToken);
 
         var inputStreamProvider = this.GetStreamProvider("Kafka");
-        var inputStreamId = StreamId.Create("GrainAuger_KafkaInput", this.GetPrimaryKey());
+        var inputStreamId = StreamId.Create("GrainAuger_KafkaInput", this.GetPrimaryKeyString());
         var inputStream = inputStreamProvider.GetStream<CardTransaction>(inputStreamId);
         
         var outputStreamProvider = this.GetStreamProvider("Kafka");
-        var outputStreamId = StreamId.Create("GrainAuger_SmallThenLargeDetector_Output", this.GetPrimaryKey());
+        var outputStreamId = StreamId.Create("GrainAuger_SmallThenLargeDetector_Output", this.GetPrimaryKeyString());
         _outputStream = outputStreamProvider.GetStream<Alert>(outputStreamId);
 
         _smallThenLargeDetector.RegisterTimerHandle = this.RegisterTimer;
