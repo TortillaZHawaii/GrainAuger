@@ -1,6 +1,7 @@
 using GrainAuger.Examples.FraudDetection.WebApi.Dtos;
 using GrainAuger.Examples.FraudDetection.WebApi.GenerateBefore;
 using Orleans.Runtime;
+using IGrainContext = GrainAuger.Examples.FraudDetection.WebApi.GenerateBefore.IGrainContext;
 
 namespace GrainAuger.Examples.FraudDetection.WebApi.Detectors;
 
@@ -17,13 +18,16 @@ public class SmallThenLargeDetector : Auger<CardTransaction, Alert>
     private readonly ILogger<SmallThenLargeDetector> _logger;
     private readonly IPersistentState<SmallThenLargeDetectorState> _state;
     private IDisposable? _timer;
+    private readonly IGrainContext _context;
 
     public SmallThenLargeDetector(
         [PersistentState("SmallThenLargeDetector", "AugerStore")]
-        IPersistentState<SmallThenLargeDetectorState> state, ILogger<SmallThenLargeDetector> logger)
+        IPersistentState<SmallThenLargeDetectorState> state, ILogger<SmallThenLargeDetector> logger, 
+        IGrainContext context)
     {
         _state = state;
         _logger = logger;
+        _context = context;
     }
 
     public override async Task ProcessAsync(CardTransaction input, Func<Alert, Task> collect)
@@ -43,7 +47,7 @@ public class SmallThenLargeDetector : Auger<CardTransaction, Alert>
             _state.State.WasLastTransactionSmall = true;
             await _state.WriteStateAsync();
             _logger.LogInformation("Registered timer");
-            _timer = RegisterTimer(ClearState, new object(), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+            _timer = _context.RegisterTimer(ClearState, new object(), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
         }
     }
 

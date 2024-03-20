@@ -1,5 +1,6 @@
 using GrainAuger.Examples.FraudDetection.WebApi.Detectors;
 using GrainAuger.Examples.FraudDetection.WebApi.Dtos;
+using GrainAuger.Examples.FraudDetection.WebApi.GenerateBefore;
 using Orleans.Runtime;
 using Orleans.Streams;
 
@@ -10,7 +11,7 @@ public class GrainAugerSmallThenLargeDetector : Grain, IGrainWithStringKey, IAsy
 {
     private readonly SmallThenLargeDetector _smallThenLargeDetector;
     
-    private IAsyncStream<Alert> _outputStream;
+    private IAsyncStream<Alert> _outputStream = null!;
 
     private readonly ILogger<GrainAugerSmallThenLargeDetector> _logger;
     
@@ -18,10 +19,12 @@ public class GrainAugerSmallThenLargeDetector : Grain, IGrainWithStringKey, IAsy
         [PersistentState("SmallThenLargeDetector", "AugerStore")]
         IPersistentState<SmallThenLargeDetectorState> state,
         ILogger<GrainAugerSmallThenLargeDetector> logger,
+        // ReSharper disable once ContextualLoggerProblem
         ILogger<SmallThenLargeDetector> smallThenLargeDetectorLogger
         )
     {
-        _smallThenLargeDetector = new SmallThenLargeDetector(state, smallThenLargeDetectorLogger);
+        var context = new GrainContext(RegisterTimer);
+        _smallThenLargeDetector = new SmallThenLargeDetector(state, smallThenLargeDetectorLogger, context);
         _logger = logger;
     }
     
@@ -39,8 +42,6 @@ public class GrainAugerSmallThenLargeDetector : Grain, IGrainWithStringKey, IAsy
         var outputStreamId = StreamId.Create("GrainAuger_SmallThenLargeDetector_Output", this.GetPrimaryKeyString());
         _outputStream = outputStreamProvider.GetStream<Alert>(outputStreamId);
 
-        _smallThenLargeDetector.RegisterTimerHandle = this.RegisterTimer;
-        
         await inputStream.SubscribeAsync(this);
         
         _logger.LogInformation("Activated");

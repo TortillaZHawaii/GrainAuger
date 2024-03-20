@@ -21,7 +21,7 @@ public class GrainAugerOverLimitDetector
     
     private IAsyncStream<Alert> _outputStream; // this is the output stream, this should be generated
     
-    private ILogger<GrainAugerOverLimitDetector> _logger;
+    private readonly ILogger<GrainAugerOverLimitDetector> _logger;
     
     public GrainAugerOverLimitDetector(
         // We could inject here some dependencies for the detector
@@ -46,8 +46,6 @@ public class GrainAugerOverLimitDetector
         var outputStreamId = StreamId.Create("GrainAuger_OverLimitDetector_Output", this.GetPrimaryKeyString());
         _outputStream = outputStreamProvider.GetStream<Alert>(outputStreamId);        
 
-        _overLimitDetector.RegisterTimerHandle = this.RegisterTimer;
-        
         await inputStream.SubscribeAsync(this);
     }
 

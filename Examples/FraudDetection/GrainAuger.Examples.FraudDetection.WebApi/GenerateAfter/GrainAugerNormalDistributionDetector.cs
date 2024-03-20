@@ -34,8 +34,6 @@ public class GrainAugerNormalDistributionDetector
         var outputStreamId = StreamId.Create("GrainAuger_NormalDistributionDetector_Output", this.GetPrimaryKeyString());
         _outputStream = outputStreamProvider.GetStream<Alert>(outputStreamId);
 
-        _normalDistributionDetector.RegisterTimerHandle = this.RegisterTimer;
-
         await inputStream.SubscribeAsync(this);
     }
 

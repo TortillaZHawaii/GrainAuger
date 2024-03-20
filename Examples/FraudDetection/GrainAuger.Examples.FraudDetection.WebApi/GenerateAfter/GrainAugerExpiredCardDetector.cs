@@ -48,8 +48,6 @@ public class GrainAugerExpiredCardDetector
         var outputStreamId = StreamId.Create("GrainAuger_ExpiredCardDetector_Output", this.GetPrimaryKeyString());
         _outputStream = outputStreamProvider.GetStream<Alert>(outputStreamId);
 
-        _expiredCardDetector.RegisterTimerHandle = this.RegisterTimer;
-        
         await inputStream.SubscribeAsync(this);
         
         _logger.LogInformation("Activated");
