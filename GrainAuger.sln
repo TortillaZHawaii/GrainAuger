@@ -1,46 +1,38 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34714.143
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{D4912921-9691-44C9-A182-32217FD5BF45}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrainAuger.Examples.Abstractions", "Examples\GrainAuger.Examples.Abstractions\GrainAuger.Examples.Abstractions.csproj", "{805B3921-C227-4F0B-A82F-54585BD6DB78}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrainAuger.Examples.Abstractions", "Examples\GrainAuger.Examples.Abstractions\GrainAuger.Examples.Abstractions.csproj", "{805B3921-C227-4F0B-A82F-54585BD6DB78}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrainAuger.Examples.Grains", "Examples\GrainAuger.Examples.Grains\GrainAuger.Examples.Grains.csproj", "{EB7355E1-FCF3-4332-952F-AD0CA6CF3B40}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrainAuger.Examples.Grains", "Examples\GrainAuger.Examples.Grains\GrainAuger.Examples.Grains.csproj", "{EB7355E1-FCF3-4332-952F-AD0CA6CF3B40}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrainAuger.Examples.WebApi", "Examples\GrainAuger.Examples.WebApi\GrainAuger.Examples.WebApi.csproj", "{168BB54D-6A23-4B83-9EC1-864500140D45}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrainAuger.Examples.WebApi", "Examples\GrainAuger.Examples.WebApi\GrainAuger.Examples.WebApi.csproj", "{168BB54D-6A23-4B83-9EC1-864500140D45}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CodeGen", "CodeGen", "{131C6177-A08B-43A8-93AA-A8D1C5AAF48D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceGenerators", "Examples\CodeGen\SourceGenerators\SourceGenerators\SourceGenerators.csproj", "{58F002D4-BA42-4F7D-8513-B90E9D17147B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGenerators", "Examples\CodeGen\SourceGenerators\SourceGenerators\SourceGenerators.csproj", "{58F002D4-BA42-4F7D-8513-B90E9D17147B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceGenerators.Sample", "Examples\CodeGen\SourceGenerators\SourceGenerators.Sample\SourceGenerators.Sample.csproj", "{3DDAD323-A8D0-408F-A6B3-032E7F40DE89}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGenerators.Sample", "Examples\CodeGen\SourceGenerators\SourceGenerators.Sample\SourceGenerators.Sample.csproj", "{3DDAD323-A8D0-408F-A6B3-032E7F40DE89}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceGenerators.Tests", "Examples\CodeGen\SourceGenerators\SourceGenerators.Tests\SourceGenerators.Tests.csproj", "{4C15D41C-2BA9-4FBD-B814-99B12D4F4F9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGenerators.Tests", "Examples\CodeGen\SourceGenerators\SourceGenerators.Tests\SourceGenerators.Tests.csproj", "{4C15D41C-2BA9-4FBD-B814-99B12D4F4F9D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrainAuger.Examples.Aspire", "Examples\GrainAuger.Examples.Aspire\GrainAuger.Examples.Aspire.csproj", "{6A48CBB0-53FB-41C2-82BF-9DFF644B91EC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrainAuger.Examples.Aspire", "Examples\GrainAuger.Examples.Aspire\GrainAuger.Examples.Aspire.csproj", "{6A48CBB0-53FB-41C2-82BF-9DFF644B91EC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrainAuger.Example.ServiceDefaults", "Examples\GrainAuger.Example.ServiceDefaults\GrainAuger.Example.ServiceDefaults.csproj", "{06C75257-E255-492F-9E16-23616563249D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrainAuger.Example.ServiceDefaults", "Examples\GrainAuger.Example.ServiceDefaults\GrainAuger.Example.ServiceDefaults.csproj", "{06C75257-E255-492F-9E16-23616563249D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FraudDetection", "FraudDetection", "{D875D1CD-4A73-4509-8228-444B85F6C6E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrainAuger.Examples.FraudDetection.WebApi", "Examples\FraudDetection\GrainAuger.Examples.FraudDetection.WebApi\GrainAuger.Examples.FraudDetection.WebApi.csproj", "{57F6207B-C1A5-4A6F-9189-21E62D8EC929}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrainAuger.Examples.FraudDetection.WebApi", "Examples\FraudDetection\GrainAuger.Examples.FraudDetection.WebApi\GrainAuger.Examples.FraudDetection.WebApi.csproj", "{57F6207B-C1A5-4A6F-9189-21E62D8EC929}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrainAuger.SourceGenerator", "GrainAuger.SourceGenerator\GrainAuger.SourceGenerator.csproj", "{4A862667-D910-4348-A702-97C25851FEA2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{805B3921-C227-4F0B-A82F-54585BD6DB78} = {D4912921-9691-44C9-A182-32217FD5BF45}
-		{EB7355E1-FCF3-4332-952F-AD0CA6CF3B40} = {D4912921-9691-44C9-A182-32217FD5BF45}
-		{168BB54D-6A23-4B83-9EC1-864500140D45} = {D4912921-9691-44C9-A182-32217FD5BF45}
-		{131C6177-A08B-43A8-93AA-A8D1C5AAF48D} = {D4912921-9691-44C9-A182-32217FD5BF45}
-		{58F002D4-BA42-4F7D-8513-B90E9D17147B} = {131C6177-A08B-43A8-93AA-A8D1C5AAF48D}
-		{3DDAD323-A8D0-408F-A6B3-032E7F40DE89} = {131C6177-A08B-43A8-93AA-A8D1C5AAF48D}
-		{4C15D41C-2BA9-4FBD-B814-99B12D4F4F9D} = {131C6177-A08B-43A8-93AA-A8D1C5AAF48D}
-		{6A48CBB0-53FB-41C2-82BF-9DFF644B91EC} = {D4912921-9691-44C9-A182-32217FD5BF45}
-		{06C75257-E255-492F-9E16-23616563249D} = {D4912921-9691-44C9-A182-32217FD5BF45}
-		{D875D1CD-4A73-4509-8228-444B85F6C6E7} = {D4912921-9691-44C9-A182-32217FD5BF45}
-		{57F6207B-C1A5-4A6F-9189-21E62D8EC929} = {D875D1CD-4A73-4509-8228-444B85F6C6E7}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{805B3921-C227-4F0B-A82F-54585BD6DB78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -79,5 +71,28 @@ Global
 		{57F6207B-C1A5-4A6F-9189-21E62D8EC929}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57F6207B-C1A5-4A6F-9189-21E62D8EC929}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57F6207B-C1A5-4A6F-9189-21E62D8EC929}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A862667-D910-4348-A702-97C25851FEA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A862667-D910-4348-A702-97C25851FEA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A862667-D910-4348-A702-97C25851FEA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A862667-D910-4348-A702-97C25851FEA2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{805B3921-C227-4F0B-A82F-54585BD6DB78} = {D4912921-9691-44C9-A182-32217FD5BF45}
+		{EB7355E1-FCF3-4332-952F-AD0CA6CF3B40} = {D4912921-9691-44C9-A182-32217FD5BF45}
+		{168BB54D-6A23-4B83-9EC1-864500140D45} = {D4912921-9691-44C9-A182-32217FD5BF45}
+		{131C6177-A08B-43A8-93AA-A8D1C5AAF48D} = {D4912921-9691-44C9-A182-32217FD5BF45}
+		{58F002D4-BA42-4F7D-8513-B90E9D17147B} = {131C6177-A08B-43A8-93AA-A8D1C5AAF48D}
+		{3DDAD323-A8D0-408F-A6B3-032E7F40DE89} = {131C6177-A08B-43A8-93AA-A8D1C5AAF48D}
+		{4C15D41C-2BA9-4FBD-B814-99B12D4F4F9D} = {131C6177-A08B-43A8-93AA-A8D1C5AAF48D}
+		{6A48CBB0-53FB-41C2-82BF-9DFF644B91EC} = {D4912921-9691-44C9-A182-32217FD5BF45}
+		{06C75257-E255-492F-9E16-23616563249D} = {D4912921-9691-44C9-A182-32217FD5BF45}
+		{D875D1CD-4A73-4509-8228-444B85F6C6E7} = {D4912921-9691-44C9-A182-32217FD5BF45}
+		{57F6207B-C1A5-4A6F-9189-21E62D8EC929} = {D875D1CD-4A73-4509-8228-444B85F6C6E7}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {40EF1F84-B661-455B-B88E-D45C8EA8F568}
 	EndGlobalSection
 EndGlobal
