@@ -12,16 +12,21 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         // Filter the classes that implement IAugerJobConfiguration
         context.SyntaxProvider
             .CreateSyntaxProvider((node, token) =>
-        {
-            if (node is ClassDeclarationSyntax interfaceDeclaration)
             {
-                if (interfaceDeclaration.BaseList?.Types.Any(x => x.Type.ToString() == "IAugerJobConfiguration") == true)
-                {
-                    return true;
-                }
-            }
+                if (node is not ClassDeclarationSyntax classDeclaration) return false;
+                
+                return classDeclaration.BaseList?.Types.Any(x =>
+                    x.Type.ToString() == "IAugerJobConfiguration") == true;
+            }, 
+                (generatorContext, _) =>
+            {
+                var classDeclaration = (ClassDeclarationSyntax)generatorContext.Node;
+                var semanticModel = generatorContext.SemanticModel;
+                var classSymbol = semanticModel.GetDeclaredSymbol(classDeclaration);
 
-            return false;
-        }, (generatorContext, cancelletionToken) => { return "Found"; });
+                var namespaceName = classSymbol?.ContainingNamespace.ToDisplayString();
+
+                return (classDeclaration, namespaceName);
+            });
     }
 }
