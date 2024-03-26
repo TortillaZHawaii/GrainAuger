@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using GrainAuger.Abstractions;
 using Orleans.Streams;
 
-namespace GrainAuger.Abstractions
+namespace GrainAuger.Core
 {
     internal class AugerStream : IAugerStream
     {

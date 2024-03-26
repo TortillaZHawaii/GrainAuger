@@ -1,4 +1,4 @@
-using GrainAuger.Abstractions.AugerJobs;
+using GrainAuger.Core;
 using Orleans.Streams;
 
 namespace GrainAuger.Abstractions.Tests;

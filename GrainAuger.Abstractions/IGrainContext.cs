@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace GrainAuger.Abstractions.GrainContexts
+namespace GrainAuger.Abstractions
 {
     public interface IGrainContext
     {
