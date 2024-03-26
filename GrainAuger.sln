@@ -39,6 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrainAuger.LoadBalancers", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleAppTests", "Examples\CodeGen\ConsoleAppTests\ConsoleAppTests.csproj", "{6B87F57C-D58C-4F51-9A20-AA2E4C3EB1F2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrainAuger.Abstractions.Tests", "test\GrainAuger.Abstractions.Tests\GrainAuger.Abstractions.Tests.csproj", "{9EC6BF3A-3BC3-4656-87FC-C1BAAAC78251}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -101,6 +103,10 @@ Global
 		{6B87F57C-D58C-4F51-9A20-AA2E4C3EB1F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B87F57C-D58C-4F51-9A20-AA2E4C3EB1F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B87F57C-D58C-4F51-9A20-AA2E4C3EB1F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EC6BF3A-3BC3-4656-87FC-C1BAAAC78251}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EC6BF3A-3BC3-4656-87FC-C1BAAAC78251}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EC6BF3A-3BC3-4656-87FC-C1BAAAC78251}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EC6BF3A-3BC3-4656-87FC-C1BAAAC78251}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -119,6 +125,7 @@ Global
 		{57F6207B-C1A5-4A6F-9189-21E62D8EC929} = {D875D1CD-4A73-4509-8228-444B85F6C6E7}
 		{64A46E04-ACF3-44AE-B8AA-3DD90C28CF03} = {09EC927A-1A87-49AA-9AD0-DCEE6AC6E023}
 		{6B87F57C-D58C-4F51-9A20-AA2E4C3EB1F2} = {131C6177-A08B-43A8-93AA-A8D1C5AAF48D}
+		{9EC6BF3A-3BC3-4656-87FC-C1BAAAC78251} = {09EC927A-1A87-49AA-9AD0-DCEE6AC6E023}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {40EF1F84-B661-455B-B88E-D45C8EA8F568}

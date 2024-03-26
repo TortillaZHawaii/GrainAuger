@@ -9,6 +9,10 @@ namespace GrainAuger.Abstractions
         string Name { get; }
         string ProviderName { get; }
         
+        Type OutputType { get; }
+        
+        IReadOnlyList<Type> Processors { get; }
+        
         IAugerStream Process<T1>(string name);
 
 

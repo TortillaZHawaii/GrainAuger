@@ -2,9 +2,9 @@
 {
     public class AugerJobBuilder
     {
-        public IAugerStream FromStream(string providerName, string streamName)
+        public IAugerStream FromStream<T>(string providerName, string streamName)
         {
-            return new AugerStream(streamName, providerName);
+            return new AugerStream(providerName, streamName, typeof(T));
         }
     }
 }
