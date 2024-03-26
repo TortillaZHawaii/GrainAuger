@@ -6,15 +6,18 @@ namespace GrainAuger.Abstractions
 {
     public interface IAugerStream
     {
-        IAugerStream Process<T1>();
+        string Name { get; }
+        string ProviderName { get; }
+        
+        IAugerStream Process<T1>(string name);
 
 
-        IAugerStream Process<T1, T2>();
+        IAugerStream Process<T1, T2>(string name);
 
 
-        IAugerStream Process<T1, T2, T3>();
+        IAugerStream Process<T1, T2, T3>(string name);
 
 
-        IAugerStream Process<T1, T2, T3, T4>();
+        IAugerStream Process<T1, T2, T3, T4>(string name);
     }
 }

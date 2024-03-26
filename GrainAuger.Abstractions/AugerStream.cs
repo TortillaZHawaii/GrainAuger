@@ -2,24 +2,33 @@
 {
     internal class AugerStream : IAugerStream
     {
-        public IAugerStream Process<T1>()
+        public AugerStream(string providerName, string name)
         {
-            return new AugerStream();
+            ProviderName = providerName;
+            Name = name;
         }
 
-        public IAugerStream Process<T1, T2>()
+        public string Name { get; }
+        public string ProviderName { get; }
+        
+        public IAugerStream Process<T1>(string name)
         {
-            return new AugerStream();
+            return new AugerStream(ProviderName, name);
         }
 
-        public IAugerStream Process<T1, T2, T3>()
+        public IAugerStream Process<T1, T2>(string name)
         {
-            return new AugerStream();
+            return new AugerStream(ProviderName, name);
         }
 
-        public IAugerStream Process<T1, T2, T3, T4>()
+        public IAugerStream Process<T1, T2, T3>(string name)
         {
-            return new AugerStream();
+            return new AugerStream(ProviderName, name);
+        }
+
+        public IAugerStream Process<T1, T2, T3, T4>(string name)
+        {
+            return new AugerStream(ProviderName, name);
         }
     }
 }

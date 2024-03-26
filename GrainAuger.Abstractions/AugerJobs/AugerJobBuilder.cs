@@ -4,7 +4,7 @@
     {
         public IAugerStream FromStream(string providerName, string streamName)
         {
-            return new AugerStream();
+            return new AugerStream(streamName, providerName);
         }
     }
 }

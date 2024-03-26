@@ -9,9 +9,9 @@ public class FraudDetectionJob : IAugerJobConfiguration
     {
         var inputStream = builder.FromStream("AugerStreamProvider", "input");
         
-        var overLimitStream = inputStream.Process<OverLimitDetector>();
-        var expiredCardStream = inputStream.Process<ExpiredCardDetector>();
-        var normalDistributionStream = inputStream.Process<NormalDistributionDetector>();
-        var smallThenLargeStream = inputStream.Process<SmallThenLargeDetector>();
+        var overLimitStream = inputStream.Process<OverLimitDetector>("overLimitStream");
+        var expiredCardStream = inputStream.Process<ExpiredCardDetector>("expiredCardStream");
+        var normalDistributionStream = inputStream.Process<NormalDistributionDetector>("normalDistributionStream");
+        var smallThenLargeStream = inputStream.Process<SmallThenLargeDetector>("smallThenLargeStream");
     }
 }
