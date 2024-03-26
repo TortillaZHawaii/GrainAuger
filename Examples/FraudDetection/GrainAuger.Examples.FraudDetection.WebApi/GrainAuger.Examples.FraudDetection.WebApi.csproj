@@ -23,6 +23,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\GrainAuger.Abstractions\GrainAuger.Abstractions.csproj" />
+      <ProjectReference Include="..\..\..\GrainAuger.SourceGenerator\GrainAuger.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
     </ItemGroup>
 
 </Project>
