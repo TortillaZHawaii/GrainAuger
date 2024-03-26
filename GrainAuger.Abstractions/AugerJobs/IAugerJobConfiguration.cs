@@ -1,4 +1,4 @@
-﻿namespace GrainAuger.Abstractions
+﻿namespace GrainAuger.Abstractions.AugerJobs
 {
     public interface IAugerJobConfiguration
     {

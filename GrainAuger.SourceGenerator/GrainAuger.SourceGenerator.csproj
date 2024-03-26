@@ -18,4 +18,8 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\GrainAuger.Abstractions\GrainAuger.Abstractions.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -1,4 +1,4 @@
-using GrainAuger.Abstractions;
+using GrainAuger.Abstractions.AugerJobs;
 using GrainAuger.Examples.FraudDetection.WebApi.Detectors;
 
 namespace GrainAuger.Examples.FraudDetection.WebApi.JobConfiguration;

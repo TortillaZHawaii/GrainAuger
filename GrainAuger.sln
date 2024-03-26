@@ -31,6 +31,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrainAuger.SourceGenerator"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrainAuger.Abstractions", "GrainAuger.Abstractions\GrainAuger.Abstractions.csproj", "{D0852877-7DC5-4BC2-BD8E-400858903136}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{09EC927A-1A87-49AA-9AD0-DCEE6AC6E023}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrainAuger.SourceGenerator.Tests", "test\GrainAuger.SourceGenerator.Tests\GrainAuger.SourceGenerator.Tests.csproj", "{64A46E04-ACF3-44AE-B8AA-3DD90C28CF03}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +85,10 @@ Global
 		{D0852877-7DC5-4BC2-BD8E-400858903136}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D0852877-7DC5-4BC2-BD8E-400858903136}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D0852877-7DC5-4BC2-BD8E-400858903136}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64A46E04-ACF3-44AE-B8AA-3DD90C28CF03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64A46E04-ACF3-44AE-B8AA-3DD90C28CF03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64A46E04-ACF3-44AE-B8AA-3DD90C28CF03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64A46E04-ACF3-44AE-B8AA-3DD90C28CF03}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,6 +105,7 @@ Global
 		{06C75257-E255-492F-9E16-23616563249D} = {D4912921-9691-44C9-A182-32217FD5BF45}
 		{D875D1CD-4A73-4509-8228-444B85F6C6E7} = {D4912921-9691-44C9-A182-32217FD5BF45}
 		{57F6207B-C1A5-4A6F-9189-21E62D8EC929} = {D875D1CD-4A73-4509-8228-444B85F6C6E7}
+		{64A46E04-ACF3-44AE-B8AA-3DD90C28CF03} = {09EC927A-1A87-49AA-9AD0-DCEE6AC6E023}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {40EF1F84-B661-455B-B88E-D45C8EA8F568}
