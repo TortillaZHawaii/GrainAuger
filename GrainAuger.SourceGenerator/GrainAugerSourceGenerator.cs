@@ -46,27 +46,25 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         // Filter the classes that implement IAugerJobConfiguration
         context.SyntaxProvider
             .CreateSyntaxProvider((node, token) =>
-            {
-                if (node is not ClassDeclarationSyntax classDeclaration)
                 {
-                    return false;
-                }
-                
-                return classDeclaration.BaseList?.Types.Any(x =>
-                    x.Type.ToString() == "IAugerJobConfiguration") == true;
-            }, 
-                (generatorContext, _) =>
-            {
-                var classDeclaration = (ClassDeclarationSyntax)generatorContext.Node;
-                var semanticModel = generatorContext.SemanticModel;
-                var classSymbol = semanticModel.GetDeclaredSymbol(classDeclaration);
+                    if (node is not ClassDeclarationSyntax classDeclaration)
+                    {
+                        return false;
+                    }
 
-                var namespaceName = classSymbol?.ContainingNamespace.ToDisplayString();
+                    return classDeclaration.BaseList?.Types.Any(x =>
+                        x.Type.ToString() == "IAugerJobConfiguration") == true;
+                },
+                (generatorContext, token) =>
+                {
+                    var classDeclaration = (ClassDeclarationSyntax)generatorContext.Node;
+                    var semanticModel = generatorContext.SemanticModel;
+                    var classSymbol = semanticModel.GetDeclaredSymbol(classDeclaration, token);
 
-                Console.WriteLine(namespaceName ?? "No namespace found");
-                
-                return (classDeclaration, namespaceName);
-            });
+                    var namespaceName = classSymbol?.ContainingNamespace.ToDisplayString();
+
+                    return (classDeclaration, namespaceName, semanticModel);
+                });
     }
 
     private void GenerateGrain(SourceProductionContext context, Compilation compilation)
