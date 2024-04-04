@@ -6,6 +6,11 @@ namespace GrainAuger.Examples.FraudDetection.WebApi.JobConfiguration;
 
 public class FraudDetectionJob : IAugerJobConfiguration
 {
+    [AugerJobConfiguration(
+        "FraudDetectionJob",
+        "Fraud Detection Job Description",
+        "Fraud", 
+        "v0.0.1")]
     public void Configure(IAugerJobBuilder builder)
     {
         var inputStream = builder.FromStream<CardTransaction>("AugerStreamProvider", "input");
