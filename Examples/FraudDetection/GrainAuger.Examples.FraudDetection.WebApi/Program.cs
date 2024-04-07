@@ -1,3 +1,4 @@
+using GrainAuger.Core.Extensions;
 using GrainAuger.Examples.FraudDetection.WebApi.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,8 @@ builder.Host.UseOrleans(siloBuilder =>
     siloBuilder.AddMemoryStreams("Kafka");
 
     siloBuilder.UseDashboard(x => x.HostSelf = true);
+    
+    siloBuilder.UseAugerJob();
 });
 
 var app = builder.Build();
