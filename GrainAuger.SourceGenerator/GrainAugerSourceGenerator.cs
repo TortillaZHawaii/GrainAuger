@@ -21,7 +21,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             .CreateSyntaxProvider(
                 (syntaxNode, _) => syntaxNode is MethodDeclarationSyntax,
                 GetMethodDeclarationForSourceGen)
-            .Where(t => t.jobConfigurationAttributeFound)
+            .Where(t => t is { jobConfigurationAttributeFound: true, syntax: not null })
             .Select((t, _) => t.syntax);
         
         context.RegisterSourceOutput(
