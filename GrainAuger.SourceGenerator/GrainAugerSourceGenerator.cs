@@ -75,9 +75,11 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         }
         
         var namespaceName = methodSymbol.ContainingNamespace.ToDisplayString();
-        var attribute = methodSymbol.GetAttributes()
-            .OfType<AugerJobConfigurationAttribute>().First();
-        var jobName = attribute.JobName;
+        var attributes = methodSymbol.GetAttributes();
+        // find one attribute with the name AugerJobConfigurationAttribute
+        var attribute = attributes.FirstOrDefault(a => a.AttributeClass?.Name == "AugerJobConfigurationAttribute");
+        // get the job name property value from the attribute
+        var jobName = attribute?.NamedArguments.FirstOrDefault(a => a.Key == "JobName").Value.Value?.ToString() ?? "UnknownJobName";
 
         // go over each statement in the method
         DataFlowAnalysis analysis = semanticModel.AnalyzeDataFlow(methodDeclaration.Body);
