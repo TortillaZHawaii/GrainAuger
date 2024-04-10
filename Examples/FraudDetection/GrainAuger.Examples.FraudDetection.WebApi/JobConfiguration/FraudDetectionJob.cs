@@ -11,7 +11,7 @@ public class FraudDetectionJob
     {
         var inputStream = builder.FromStream<CardTransaction>("AugerStreamProvider", "input");
         
-        var overLimitStream = inputStream.Process<OverLimitDetector>("overLimitStream");
+        IAugerStream overLimitStream = inputStream.Process<OverLimitDetector, OverLimitDetector>("overLimitStream");
         var expiredCardStream = inputStream.Process<ExpiredCardDetector>("expiredCardStream");
         var normalDistributionStream = inputStream.Process<NormalDistributionDetector>("normalDistributionStream");
         var smallThenLargeStream = inputStream.Process<SmallThenLargeDetector>("smallThenLargeStream");
