@@ -93,6 +93,12 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             {
                 continue;
             }
+            
+            // get information about the generic types inside <> of the method
+            var genericTypes = method.TypeArguments.Select(t => t.Name);
+            
+            // get the information about constructors of the generic types
+            var constructors = genericTypes.Select(t => semanticModel.Compilation.GetTypeByMetadataName(t)?.Constructors);
 
             var calledMethodName = method.Name;
             if (!dag.ContainsKey(variableName))
@@ -102,6 +108,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
 
             dag[variableName].Add(calledMethodName);
         }
+        
         
         // create comment of the dag
         var dagComment = string.Join("\n", dag.Select(kvp => $"{kvp.Key}: {string.Join(", ", kvp.Value)}"));
