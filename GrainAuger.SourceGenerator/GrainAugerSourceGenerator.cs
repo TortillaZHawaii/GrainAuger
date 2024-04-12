@@ -9,6 +9,8 @@ using System.Threading;
 using GrainAuger.Abstractions;
 using Microsoft.CodeAnalysis.Text;
 
+#nullable enable
+
 namespace GrainAuger.SourceGenerator;
 
 [Generator]
@@ -26,7 +28,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         
         context.RegisterSourceOutput(
             context.CompilationProvider.Combine(methodProvider.Collect()),
-            (ctx, t) => GenerateGrains(ctx, t.Left, t.Right));
+            (ctx, t) => GenerateJobs(ctx, t.Left, t.Right));
     }
 
     private (MethodDeclarationSyntax syntax, bool jobConfigurationAttributeFound)
@@ -55,16 +57,16 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         return (methodDeclarationSyntax, false);
     }
 
-    private void GenerateGrains(SourceProductionContext context, Compilation compilation,
+    private void GenerateJobs(SourceProductionContext context, Compilation compilation,
         ImmutableArray<MethodDeclarationSyntax> methodDeclarations)
     {
         foreach (var methodDeclaration in methodDeclarations)
         {
-            GenerateGrain(context, compilation, methodDeclaration);
+            GenerateJob(context, compilation, methodDeclaration);
         }
     }
 
-    private void GenerateGrain(SourceProductionContext context, Compilation compilation,
+    private void GenerateJob(SourceProductionContext context, Compilation compilation,
         MethodDeclarationSyntax methodDeclaration)
     {
         var semanticModel = compilation.GetSemanticModel(methodDeclaration.SyntaxTree);
@@ -74,62 +76,68 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             return;
         }
         
-        var invocations = methodDeclaration.DescendantNodes()
-            .OfType<InvocationExpressionSyntax>();
-
-        Dictionary<string, List<string>> dag = new();
-        
-        // create a call graph from invocations, I want to get variable names
-        foreach (var invocation in invocations)
-        {
-            var symbol = semanticModel.GetSymbolInfo(invocation).Symbol;
-            if (symbol is not IMethodSymbol method)
-            {
-                continue;
-            }
-
-            var variableName = invocation.Ancestors().OfType<VariableDeclaratorSyntax>().FirstOrDefault()?.Identifier.Text;
-            if (variableName == null)
-            {
-                continue;
-            }
-            
-            // get information about the generic types inside <> of the method
-            var genericTypes = method.TypeArguments.Select(t => t.Name);
-            
-            // get the information about constructors of the generic types
-            var constructors = genericTypes.Select(t => semanticModel.Compilation.GetTypeByMetadataName(t)?.Constructors);
-
-            var calledMethodName = method.Name;
-            if (!dag.ContainsKey(variableName))
-            {
-                dag[variableName] = new List<string>();
-            }
-
-            dag[variableName].Add(calledMethodName);
-        }
-        
-        
-        // create comment of the dag
-        var dagComment = string.Join("\n", dag.Select(kvp => $"{kvp.Key}: {string.Join(", ", kvp.Value)}"));
-        
-        var namespaceName = GetNamespaceName(methodSymbol);
-        var attributes = methodSymbol.GetAttributes();
-        // find one attribute with the name AugerJobConfigurationAttribute
-        var attribute = attributes.FirstOrDefault(a => a.AttributeClass?.Name == "AugerJobConfigurationAttribute");
-        // get the job name property value from the attribute
+        var namespaceName = $"GrainAugerCodeGen.{GetNamespaceName(methodSymbol)}";
         var jobName = GetJobNameFromAttribute(methodSymbol);
         
+        var grainCodes = new List<string>();
+        var statements = GetStatements(methodDeclaration.Body!);
+
+        foreach (var statement in statements)
+        {
+            // we want only statements of form:
+            // Using the method Process or FromStream:
+            // var inputStream = builder.FromStream<CardTransaction>("AugerStreamProvider", "input");
+            // IAugerStream overLimitStream = inputStream.Process<OverLimitDetector, OverLimitDetector>("overLimitStream");
+            // var expiredCardStream = inputStream.Process<ExpiredCardDetector>("expiredCardStream");
+            // if statement is other than invocation of the Process method or FromStream method
+            // put a warning in the analyzer
+            
+            // Given example statement:
+            // IAugerStream overLimitStream = inputStream.Process<OverLimitDetector, OverLimitDetector>("overLimitStream");
+            // I want to display the following code:
+            // inputStream -[OverLimitDetector, OverLimitDetector]-> overLimitStream
+            // so I want to get the generic types of the Process method as well as names of the variables
+            var invocation = statement.DescendantNodes().OfType<InvocationExpressionSyntax>().FirstOrDefault();
+            if (invocation is null)
+            {
+                continue;
+            }
+            
+            var genericTypes = GetGenericTypes(invocation, semanticModel);
+            var localDeclarationStatement = (LocalDeclarationStatementSyntax)statement;
+
+            if (invocation.Expression is MemberAccessExpressionSyntax memberAccessExpression)
+            {
+                var name = memberAccessExpression.Name.Identifier.ToString();
+                if (name == "Process")
+                {
+                    var inputName = memberAccessExpression.Expression.ToString();
+                    var outputName = localDeclarationStatement.Declaration.Variables.First().Identifier.ToString();
+                    grainCodes.Add($"{inputName} -[{string.Join(", ", genericTypes)}]-> {outputName}");
+                }
+                else if (name == "FromStream")
+                {
+                    var outputName = localDeclarationStatement.Declaration.Variables.First().Identifier.ToString();
+                    grainCodes.Add($"Foreign Source <{genericTypes.First()}> -> {outputName}");
+                }
+            }
+            else
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    new DiagnosticDescriptor("GA002", "Invalid statement", "Expected to find Process or FromStream method", "GrainAuger",
+                        DiagnosticSeverity.Error, true),
+                    statement.GetLocation()));
+            }
+        }
+
         var code = $$"""
         // <auto-generated/>
-        using Orleans.Runtime;
-        using Orleans.Streams;
-        using GrainAuger.Core;
                 
         namespace {{namespaceName}};
         
         /*
-        {{dagComment}}
+        Found Dag for job {{jobName}}:
+        {{string.Join("\n", grainCodes)}}
         */
         
         """;
@@ -146,7 +154,9 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
     private static string GetJobNameFromAttribute(ISymbol methodSymbol)
     {
         var attributes = methodSymbol.GetAttributes();
-        var attribute = attributes.FirstOrDefault(a => a.AttributeClass?.Name == "AugerJobConfigurationAttribute");
+        // check also if the namespace is correct
+        var attribute = attributes.FirstOrDefault(a => a.AttributeClass!
+            .ToDisplayString() == "GrainAuger.Abstractions.AugerJobConfigurationAttribute");
         // it can either be keyed by the name or by the index (0)
         if (attribute?.NamedArguments.FirstOrDefault(a => a.Key == "JobName").Value.Value is string jobName)
         {
@@ -159,5 +169,28 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         }
         
         return "UnknownJobName";
+    }
+    
+    // Get statements from the method
+    private static IEnumerable<StatementSyntax> GetStatements(SyntaxNode methodDeclaration)
+    {
+        var statements = methodDeclaration.DescendantNodes().OfType<StatementSyntax>();
+        return statements;
+    }
+    
+    private static ImmutableArray<ITypeSymbol> GetGenericTypes(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
+    {
+        var symbol = semanticModel.GetSymbolInfo(invocation).Symbol;
+        return symbol is not IMethodSymbol method ? [] : method.TypeArguments;
+    }
+    
+    private static ImmutableArray<IMethodSymbol> GetConstructors(ITypeSymbol genericType, SemanticModel semanticModel)
+    {
+        var constructors = genericType
+            .GetMembers()
+            .OfType<IMethodSymbol>()
+            .Where(m => m.MethodKind == MethodKind.Constructor)
+            .ToImmutableArray();
+        return constructors;
     }
 }
