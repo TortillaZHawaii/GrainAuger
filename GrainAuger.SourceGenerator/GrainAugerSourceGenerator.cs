@@ -81,6 +81,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         
         var grainCodes = new List<string>();
         var statements = GetStatements(methodDeclaration.Body!);
+        var constructors = new List<string>();
 
         foreach (var statement in statements)
         {
@@ -104,6 +105,11 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             }
             
             var genericTypes = GetGenericTypes(invocation, semanticModel);
+            var constructorsMerged = genericTypes
+                .Select(genericType => GetConstructors(genericType, semanticModel));
+            
+            constructors.AddRange(constructorsMerged.SelectMany(c => c).Select(c => c.ToDisplayString()));
+            
             var localDeclarationStatement = (LocalDeclarationStatementSyntax)statement;
 
             if (invocation.Expression is MemberAccessExpressionSyntax memberAccessExpression)
@@ -140,6 +146,10 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         {{string.Join("\n", grainCodes)}}
         */
         
+        /* 
+        Found constructors:
+        {{string.Join("\n", constructors)}}
+        */
         """;
         
         context.AddSource($"{jobName}.g.cs", SourceText.From(code, Encoding.UTF8));
