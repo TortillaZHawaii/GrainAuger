@@ -7,7 +7,7 @@
     },
     "DebugRoslynWordCount": {
       "commandName": "DebugRoslynComponent",
-      "targetProject": "../Examples/WordCount.csproj"
+      "targetProject": "../Examples/WordCount/WordCount.csproj"
     }
   }
 }

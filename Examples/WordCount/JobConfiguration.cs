@@ -2,12 +2,12 @@ using GrainAuger.Abstractions;
 
 namespace WordCount;
 
-abstract class JobConfiguration
+abstract class WordCountJobConfiguration
 {
     [AugerJobConfiguration("WordCountJob")]
     static void Configure(IAugerJobBuilder builder)
     {
-        var inputStream = builder.FromStream<string>("MemoryStream", "input");
+        var inputStream = builder.FromStream<string, string>("MemoryStream", "WordCountInput");
 
         var wordCountStream = inputStream.Process<WordCounter>("wordCounterStream");
     }

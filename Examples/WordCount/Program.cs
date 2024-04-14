@@ -1,3 +1,6 @@
+using Orleans.Runtime;
+using Orleans.Streams;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
@@ -26,6 +29,14 @@ app.UseHttpsRedirection();
 app.Map("/dashboard", configuration =>
 {
     configuration.UseOrleansDashboard();
+});
+
+app.Map("/count", async (IStreamProvider streamProvider, string text) =>
+{
+    var streamId = StreamId.Create("WordCountInput", "abc");
+    var stream = streamProvider.GetStream<string>(streamId);
+
+    await stream.OnNextAsync(text);
 });
 
 app.Run();

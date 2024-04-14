@@ -19,7 +19,7 @@ public class GrainAugerExpiredCardDetector
 {
     private readonly ExpiredCardDetector _expiredCardDetector; // this is the actual detector, this should be generated
     
-    private IAsyncStream<Alert> _outputStream; // this is the output stream, this should be generated
+    private global::Orleans.Streams.IAsyncStream<Alert> _outputStream; // this is the output stream, this should be generated
     
     private readonly ILogger<GrainAugerExpiredCardDetector> _logger;
     
