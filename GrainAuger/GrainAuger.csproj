@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\GrainAuger.Abstractions\GrainAuger.Abstractions.csproj" />
+      <ProjectReference Include="..\GrainAuger.Core\GrainAuger.Core.csproj" />
+      <ProjectReference Include="..\GrainAuger.SourceGenerator\GrainAuger.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
+    </ItemGroup>
+
+</Project>

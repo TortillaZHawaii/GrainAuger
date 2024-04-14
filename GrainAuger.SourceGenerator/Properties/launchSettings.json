@@ -1,9 +1,13 @@
 {
   "$schema": "http://json.schemastore.org/launchsettings.json",
   "profiles": {
-    "DebugRoslynSourceGenerator": {
+    "DebugRoslynFraud": {
       "commandName": "DebugRoslynComponent",
       "targetProject": "../Examples/FraudDetection/GrainAuger.Examples.FraudDetection.WebApi/GrainAuger.Examples.FraudDetection.WebApi.csproj"
+    },
+    "DebugRoslynWordCount": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "../Examples/WordCount.csproj"
     }
   }
 }
