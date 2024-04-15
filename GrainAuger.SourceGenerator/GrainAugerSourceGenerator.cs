@@ -196,7 +196,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         List<string> processorConstructors = new();
         List<string> processorOnNextCalls = new();
         
-        insertedVariables.Add($"Microsoft.Extensions.Logging.ILogger<{keyName}>", "logger");
+        insertedVariables.Add($"global::Microsoft.Extensions.Logging.ILogger<{keyName}>", "logger");
 
         var inputType = GetGlobalTypeName(node.PreviousNode.OutputType);
         string outputType = "";
@@ -227,28 +227,28 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                 }
                 else
                 {
-                    if (insertedVariables.ContainsKey(paramKey))
+                    if (insertedVariables.TryGetValue(paramKey, out var variableName))
                     {
-                        paramStrings.Add(insertedVariables[parameter.Type.ToDisplayString()]);
+                        paramStrings.Add(variableName);
                     }
                     else
                     {
-                        var variableName = $"v{variableCounter++}";
-                        insertedVariables.Add(parameter.Type.ToDisplayString(), variableName);
+                        variableName = $"v{variableCounter++}";
+                        insertedVariables.Add(paramKey, variableName);
                         paramStrings.Add(variableName);
                     }
                 }
             }
 
-            
-            processorDefinitions.Add($"private readonly {GetGlobalTypeName(augerType)} {processorVariableName};");
-            processorConstructors.Add($"{processorVariableName} = new global::{augerType.ToDisplayString()}({string.Join(", ", paramStrings)});");
+            var globalAuger = GetGlobalTypeName(augerType);
+            processorDefinitions.Add($"private readonly {globalAuger} {processorVariableName};");
+            processorConstructors.Add($"{processorVariableName} = new {globalAuger}({string.Join(", ", paramStrings)});");
             variableCounter++;
         }
 
         return $$"""
         [global::Orleans.ImplicitStreamSubscription({{node.PreviousNode.StreamNamespace}})]
-        file class {{keyName}} :
+        internal class {{keyName}} :
             global::Orleans.Grain,
             global::Orleans.IGrainWith{{grainType}}Key,
             global::Orleans.Streams.IAsyncObserver<{{inputType}}>
@@ -257,8 +257,8 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             private global::Orleans.Streams.IAsyncStream<{{outputType}}> _outputStream;
             {{string.Join("\n\t", processorDefinitions)}}
             
-            {{keyName}}(
-                {{string.Join(",\n", insertedVariables.Select(kvp => $"global::{kvp.Key} {kvp.Value}"))}}
+            internal {{keyName}}(
+                {{string.Join(",\n\t\t", insertedVariables.Select(kvp => $"{kvp.Key} {kvp.Value}"))}}
                 )
             {
                 _logger = logger;
@@ -358,6 +358,8 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
     {
         return typeSymbol.ToDisplayString(new SymbolDisplayFormat(
             globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
-            typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces));
+            typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+            genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters
+            ));
     }
 }
