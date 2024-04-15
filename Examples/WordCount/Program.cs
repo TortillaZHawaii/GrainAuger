@@ -6,8 +6,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var app = builder.Build();
-
 builder.Host.UseOrleans(siloBuilder =>
 {
     siloBuilder
@@ -20,6 +18,8 @@ builder.Host.UseOrleans(siloBuilder =>
 
     siloBuilder.UseDashboard(x => x.HostSelf = true);
 });
+
+var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
