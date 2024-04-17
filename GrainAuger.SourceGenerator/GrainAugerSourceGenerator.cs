@@ -200,6 +200,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
 
         var inputType = GetGlobalTypeName(node.PreviousNode.OutputType);
         string outputType = "";
+        string firstProcessorName = "";
         
         foreach (var augerType in node.AugerTypes)
         {
@@ -213,6 +214,10 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             var parameters = constructor.Parameters;
             var processorVariableName = $"_processor{variableCounter++}";
             var paramStrings = new List<string>();
+            if (firstProcessorName == "")
+            {
+                firstProcessorName = processorVariableName;
+            }
             
             foreach (var parameter in parameters)
             {
@@ -287,8 +292,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             public async Task OnNextAsync({{inputType}} item, global::Orleans.Streams.StreamSequenceToken token = null)
             {
                 _logger.LogInformation("Processing {item}", item);
-                // chain the processors
-                
+                await {{firstProcessorName}}.OnNextAsync(item, token);                
             }
             
             public Task OnCompletedAsync()
