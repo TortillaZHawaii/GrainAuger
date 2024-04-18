@@ -202,6 +202,10 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         string outputType = "";
         string firstProcessorName = "";
         
+        string augerContextVariableName = "augerContext";
+        string augerContextDefinition = $"var {augerContextVariableName} = new global::GrainAuger.Core.AugerContext(this.RegisterTimer);";
+        bool requiresAugerContext = false;
+        
         foreach (var augerType in node.AugerTypes)
         {
             var constructors = GetConstructors(augerType, semanticModel);
@@ -228,6 +232,11 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                     var outputTypeSymbol = parameter.Type as INamedTypeSymbol;
                     outputType = GetGlobalTypeName(outputTypeSymbol!.TypeArguments.First());
                     paramStrings.Add("_outputStream");
+                }
+                else if (parameter.Type.OriginalDefinition.ToDisplayString() == "GrainAuger.Abstractions.IAugerContext")
+                {
+                    requiresAugerContext = true;
+                    paramStrings.Add(augerContextVariableName);
                 }
                 else
                 {
@@ -264,7 +273,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             internal {{keyName}}(
                 {{string.Join(",\n\t\t", insertedVariables.Select(kvp => $"{kvp.Key} {kvp.Value}"))}}
                 )
-            {
+            {{{(requiresAugerContext ? $"\n\t\t{augerContextDefinition}" : "")}}
                 _logger = logger;
                 {{string.Join("\n\t\t", processorConstructors)}}
             }
