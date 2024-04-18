@@ -295,15 +295,15 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                 await {{firstProcessorName}}.OnNextAsync(item, token);                
             }
             
-            public Task OnCompletedAsync()
+            public async Task OnCompletedAsync()
             {
-                return Task.CompletedTask;
+                await {{firstProcessorName}}.OnCompletedAsync();
             }
             
             public async Task OnErrorAsync(Exception ex)
             {
-                // push the exception to the output stream
-                await _outputStream.OnErrorAsync(ex);
+                _logger.LogError(ex, "Error occurred");
+                await {{firstProcessorName}}.OnErrorAsync(ex);
             }
         }
         """;
