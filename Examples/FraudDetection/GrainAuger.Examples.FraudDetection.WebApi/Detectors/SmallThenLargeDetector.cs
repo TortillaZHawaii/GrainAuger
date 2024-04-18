@@ -1,7 +1,7 @@
+using GrainAuger.Abstractions;
 using GrainAuger.Examples.FraudDetection.WebApi.Dtos;
-using GrainAuger.Examples.FraudDetection.WebApi.GenerateBefore;
 using Orleans.Runtime;
-using IGrainContext = GrainAuger.Examples.FraudDetection.WebApi.GenerateBefore.IGrainContext;
+using Orleans.Streams;
 
 namespace GrainAuger.Examples.FraudDetection.WebApi.Detectors;
 
@@ -10,51 +10,53 @@ public class SmallThenLargeDetectorState
     public bool WasLastTransactionSmall { get; set; } = false;
 }
 
-public class SmallThenLargeDetector : Auger<CardTransaction, Alert>
+public class SmallThenLargeDetector(
+    [PersistentState("SmallThenLargeDetector", "AugerStore")] IPersistentState<SmallThenLargeDetectorState> state,
+    ILogger<SmallThenLargeDetector> logger,
+    IAugerContext context,
+    IAsyncObserver<Alert> output)
+    : IAsyncObserver<CardTransaction>
 {
     private const int SmallAmount = 400;
     private const int LargeAmount = 500;
 
-    private readonly ILogger<SmallThenLargeDetector> _logger;
-    private readonly IPersistentState<SmallThenLargeDetectorState> _state;
     private IDisposable? _timer;
-    private readonly IGrainContext _context;
 
-    public SmallThenLargeDetector(
-        [PersistentState("SmallThenLargeDetector", "AugerStore")]
-        IPersistentState<SmallThenLargeDetectorState> state, ILogger<SmallThenLargeDetector> logger, 
-        IGrainContext context)
+    private async Task ClearState(object _)
     {
-        _state = state;
-        _logger = logger;
-        _context = context;
+        logger.LogInformation("Clearing state");
+        await state.ClearStateAsync();
+        _timer?.Dispose();
     }
 
-    public override async Task ProcessAsync(CardTransaction input, Func<Alert, Task> collect)
+    public async Task OnNextAsync(CardTransaction input, StreamSequenceToken? token = null)
     {
         _timer?.Dispose();
 
-        _logger.LogInformation("WasLastTransactionSmall: {WasLastTransactionSmall}",
-            _state.State.WasLastTransactionSmall);
-        if (_state.State.WasLastTransactionSmall && input.Amount > LargeAmount)
+        logger.LogInformation("WasLastTransactionSmall: {WasLastTransactionSmall}",
+            state.State.WasLastTransactionSmall);
+        if (state.State.WasLastTransactionSmall && input.Amount > LargeAmount)
         {
-            await collect(new Alert(input, "Large amount after small amount"));
+            await output.OnNextAsync(new Alert(input, "Large amount after small amount"));
         }
 
         if (input.Amount < SmallAmount)
         {
-            _logger.LogInformation("Setting WasLastTransactionSmall to true");
-            _state.State.WasLastTransactionSmall = true;
-            await _state.WriteStateAsync();
-            _logger.LogInformation("Registered timer");
-            _timer = _context.RegisterTimer(ClearState, new object(), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+            logger.LogInformation("Setting WasLastTransactionSmall to true");
+            state.State.WasLastTransactionSmall = true;
+            await state.WriteStateAsync();
+            logger.LogInformation("Registered timer");
+            _timer = context.RegisterTimer(ClearState, new object(), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
         }
     }
 
-    private async Task ClearState(object _)
+    public Task OnCompletedAsync()
     {
-        _logger.LogInformation("Clearing state");
-        await _state.ClearStateAsync();
-        _timer?.Dispose();
+        return Task.CompletedTask;
+    }
+
+    public Task OnErrorAsync(Exception ex)
+    {
+        return Task.CompletedTask;
     }
 }

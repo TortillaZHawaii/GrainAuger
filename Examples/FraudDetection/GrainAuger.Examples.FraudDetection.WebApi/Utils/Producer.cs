@@ -1,4 +1,5 @@
 using GrainAuger.Examples.FraudDetection.WebApi.Dtos;
+using GrainAugerCodeGen.GrainAuger.Examples.FraudDetection.WebApi.JobConfiguration;
 using Orleans.Runtime;
 
 namespace GrainAuger.Examples.FraudDetection.WebApi.Utils;

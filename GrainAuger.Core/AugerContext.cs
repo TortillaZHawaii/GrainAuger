@@ -2,11 +2,11 @@
 
 namespace GrainAuger.Core
 {
-    public class GrainContext : IGrainContext
+    public class AugerContext : IAugerContext
     {
         private Func<Func<object, Task>, object, TimeSpan, TimeSpan, IDisposable> _registerTimerHandle;
 
-        public GrainContext(Func<Func<object, Task>, object, TimeSpan, TimeSpan, IDisposable> registerTimerHandle)
+        public AugerContext(Func<Func<object, Task>, object, TimeSpan, TimeSpan, IDisposable> registerTimerHandle)
         {
             _registerTimerHandle = registerTimerHandle;
         }

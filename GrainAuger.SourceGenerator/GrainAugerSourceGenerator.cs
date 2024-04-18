@@ -225,9 +225,8 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                 
                 if (parameter.Type.OriginalDefinition.ToDisplayString() == "Orleans.Streams.IAsyncObserver<T>")
                 {
-                    // output Type should be set to global::System.Int32 if 
-                    // the parameter is of type IAsyncObserver<int>
-                    outputType = "global::System.Int32"; // TODO: fix this
+                    var outputTypeSymbol = parameter.Type as INamedTypeSymbol;
+                    outputType = GetGlobalTypeName(outputTypeSymbol!.TypeArguments.First());
                     paramStrings.Add("_outputStream");
                 }
                 else
