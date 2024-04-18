@@ -225,7 +225,15 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             
             foreach (var parameter in parameters)
             {
+                var attributesString = parameter
+                    .GetAttributes()
+                    .Select(x => $"global::{x}")
+                    .ToList();
                 var paramKey = GetGlobalTypeName(parameter.Type);
+                if (attributesString.Any())
+                {
+                    paramKey = $"[{string.Join(", ", attributesString)}] {paramKey}";
+                }
                 
                 if (parameter.Type.OriginalDefinition.ToDisplayString() == "Orleans.Streams.IAsyncObserver<T>")
                 {
