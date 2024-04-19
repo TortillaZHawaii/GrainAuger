@@ -201,6 +201,8 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         var inputType = GetGlobalTypeName(node.PreviousNode.OutputType);
         string outputType = "";
         string firstProcessorName = "";
+        // public visibility is required for the Orleans framework to find suitable constructor
+        string visibility = "public";
         
         string augerContextVariableName = "augerContext";
         string augerContextDefinition = $"var {augerContextVariableName} = new global::GrainAuger.Core.AugerContext(this.RegisterTimer);";
@@ -269,7 +271,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
 
         return $$"""
         [global::Orleans.ImplicitStreamSubscription({{node.PreviousNode.StreamNamespace}})]
-        internal class {{keyName}} :
+        {{visibility}} class {{keyName}} :
             global::Orleans.Grain,
             global::Orleans.IGrainWith{{grainType}}Key,
             global::Orleans.Streams.IAsyncObserver<{{inputType}}>
@@ -278,7 +280,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             private global::Orleans.Streams.IAsyncStream<{{outputType}}> _outputStream;
             {{string.Join("\n\t", processorDefinitions)}}
             
-            internal {{keyName}}(
+            {{visibility}} {{keyName}}(
                 {{string.Join(",\n\t\t", insertedVariables.Select(kvp => $"{kvp.Key} {kvp.Value}"))}}
                 )
             {{{(requiresAugerContext ? $"\n\t\t{augerContextDefinition}" : "")}}
