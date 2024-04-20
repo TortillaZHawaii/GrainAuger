@@ -195,7 +195,6 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         
         List<string> processorDefinitions = new();
         List<string> processorConstructors = new();
-        List<string> processorOnNextCalls = new();
         
         insertedVariables.Add($"global::Microsoft.Extensions.Logging.ILogger<{keyName}>", "logger");
 
@@ -209,7 +208,9 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         string augerContextDefinition = $"global::GrainAuger.Core.AugerContext {augerContextVariableName} = new (this.RegisterTimer);";
         bool requiresAugerContext = false;
         
-        foreach (var augerType in node.AugerTypes)
+        var lastObserver = "_outputStream";
+        
+        foreach (var augerType in node.AugerTypes.Reverse())
         {
             var constructors = GetConstructors(augerType, semanticModel);
             if (constructors.Count() != 1)
@@ -221,10 +222,8 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             var parameters = constructor.Parameters;
             var processorVariableName = $"_processor{variableCounter++}";
             var paramStrings = new List<string>();
-            if (firstProcessorName == "")
-            {
-                firstProcessorName = processorVariableName;
-            }
+            
+            firstProcessorName = processorVariableName;
             
             foreach (var parameter in parameters)
             {
@@ -242,7 +241,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                 {
                     var outputTypeSymbol = parameter.Type as INamedTypeSymbol;
                     outputType = GetGlobalTypeName(outputTypeSymbol!.TypeArguments.First());
-                    paramStrings.Add("_outputStream");
+                    paramStrings.Add(lastObserver);
                 }
                 else if (parameter.Type.OriginalDefinition.ToDisplayString() == "GrainAuger.Abstractions.IAugerContext")
                 {
@@ -263,7 +262,8 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                     }
                 }
             }
-
+            
+            lastObserver = processorVariableName;
             var globalAuger = GetGlobalTypeName(augerType);
             processorDefinitions.Add($"private {globalAuger} {processorVariableName} = null!;");
             processorConstructors.Add($"{processorVariableName} = new {globalAuger}({string.Join(", ", paramStrings)});");

@@ -15,5 +15,7 @@ public class FraudDetectionJob
         var expiredCardStream = inputStream.Process<ExpiredCardDetector>("expiredCardStream");
         var normalDistributionStream = inputStream.Process<NormalDistributionDetector>("normalDistributionStream");
         var smallThenLargeStream = inputStream.Process<SmallThenLargeDetector>("smallThenLargeStream");
+        
+        var chainedSum = inputStream.Process<MoneyFromTransactionGetter, MoneyFromTransactionsAggregator>("chainedSum");
     }
 }
