@@ -2,7 +2,7 @@ using Orleans.Streams;
 
 namespace WordCount;
 
-class WordCounter(IAsyncObserver<int> output, ILogger<WordCounter> logger
+public class WordCounter(IAsyncObserver<int> output, ILogger<WordCounter> logger
     ) : IAsyncObserver<string>
 {
     private int _wordCount = 0;
