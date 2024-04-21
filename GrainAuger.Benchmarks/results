@@ -1,0 +1,300 @@
+// ** Remained 0 (0.0%) benchmark(s) to run. Estimated finish 2024-04-21 14:56 (0h 0m from now) **
+Successfully reverted power plan (GUID: 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c FriendlyName: High performance)
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  BenchmarkDotNet.Artifacts\results\GrainAuger.Benchmarks.ProcessChains.ProcessChainsBenchmark-report.csv
+  BenchmarkDotNet.Artifacts\results\GrainAuger.Benchmarks.ProcessChains.ProcessChainsBenchmark-report-github.md
+  BenchmarkDotNet.Artifacts\results\GrainAuger.Benchmarks.ProcessChains.ProcessChainsBenchmark-report.html
+
+// * Detailed results *
+ProcessChainsBenchmark.ProcessSplit: DefaultJob [N=100]
+Runtime = .NET 8.0.3 (8.0.324.11423), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 294.315 ms, StdErr = 5.984 ms (2.03%), N = 100, StdDev = 59.837 ms
+Min = 199.583 ms, Q1 = 255.976 ms, Median = 265.603 ms, Q3 = 360.340 ms, Max = 427.961 ms
+IQR = 104.364 ms, LowerFence = 99.431 ms, UpperFence = 516.886 ms
+ConfidenceInterval = [274.021 ms; 314.609 ms] (CI 99.9%), Margin = 20.294 ms (6.90% of Mean)
+Skewness = 0.04, Kurtosis = 1.73, MValue = 4.69
+-------------------- Histogram --------------------
+[190.335 ms ; 224.176 ms) | @@@@@@@@@@@@@@@@
+[224.176 ms ; 241.563 ms) |
+[241.563 ms ; 275.403 ms) | @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+[275.403 ms ; 301.021 ms) | @
+[301.021 ms ; 334.861 ms) | @@@@@@@@@@@@@@@
+[334.861 ms ; 377.326 ms) | @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+[377.326 ms ; 397.187 ms) | @
+[397.187 ms ; 411.040 ms) |
+[411.040 ms ; 444.881 ms) | @
+---------------------------------------------------
+
+ProcessChainsBenchmark.ProcessJoin: DefaultJob [N=100]
+Runtime = .NET 8.0.3 (8.0.324.11423), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 211.884 ms, StdErr = 0.340 ms (0.16%), N = 15, StdDev = 1.317 ms
+Min = 208.757 ms, Q1 = 210.976 ms, Median = 212.009 ms, Q3 = 212.769 ms, Max = 213.703 ms
+IQR = 1.793 ms, LowerFence = 208.286 ms, UpperFence = 215.459 ms
+ConfidenceInterval = [210.477 ms; 213.292 ms] (CI 99.9%), Margin = 1.408 ms (0.66% of Mean)
+Skewness = -0.56, Kurtosis = 2.74, MValue = 2
+-------------------- Histogram --------------------
+[208.056 ms ; 214.404 ms) | @@@@@@@@@@@@@@@
+---------------------------------------------------
+
+ProcessChainsBenchmark.ProcessSplit: DefaultJob [N=200]
+Runtime = .NET 8.0.3 (8.0.324.11423), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 245.405 ms, StdErr = 0.524 ms (0.21%), N = 15, StdDev = 2.031 ms
+Min = 241.925 ms, Q1 = 244.360 ms, Median = 245.206 ms, Q3 = 246.617 ms, Max = 248.975 ms
+IQR = 2.258 ms, LowerFence = 240.973 ms, UpperFence = 250.004 ms
+ConfidenceInterval = [243.234 ms; 247.577 ms] (CI 99.9%), Margin = 2.172 ms (0.88% of Mean)
+Skewness = 0, Kurtosis = 2.09, MValue = 2
+-------------------- Histogram --------------------
+[240.844 ms ; 250.056 ms) | @@@@@@@@@@@@@@@
+---------------------------------------------------
+
+ProcessChainsBenchmark.ProcessJoin: DefaultJob [N=200]
+Runtime = .NET 8.0.3 (8.0.324.11423), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 433.935 ms, StdErr = 16.274 ms (3.75%), N = 100, StdDev = 162.736 ms
+Min = 124.160 ms, Q1 = 331.773 ms, Median = 427.219 ms, Q3 = 571.115 ms, Max = 745.745 ms
+IQR = 239.341 ms, LowerFence = -27.239 ms, UpperFence = 930.127 ms
+ConfidenceInterval = [378.743 ms; 489.128 ms] (CI 99.9%), Margin = 55.192 ms (12.72% of Mean)
+Skewness = 0.07, Kurtosis = 2.03, MValue = 2.97
+-------------------- Histogram --------------------
+[ 78.144 ms ; 195.496 ms) | @@@@@
+[195.496 ms ; 301.957 ms) | @@@@@@@@@@@@@@
+[301.957 ms ; 393.991 ms) | @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+[393.991 ms ; 501.150 ms) | @@@@@@@@@@@@@@@@@@
+[501.150 ms ; 614.168 ms) | @@@@@@@@@@@@@@@@@@@
+[614.168 ms ; 656.917 ms) | @
+[656.917 ms ; 748.950 ms) | @@@@@@@@@@@@@@
+---------------------------------------------------
+
+ProcessChainsBenchmark.ProcessSplit: DefaultJob [N=500]
+Runtime = .NET 8.0.3 (8.0.324.11423), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 544.710 ms, StdErr = 17.926 ms (3.29%), N = 100, StdDev = 179.260 ms
+Min = 200.371 ms, Q1 = 402.712 ms, Median = 565.703 ms, Q3 = 677.295 ms, Max = 876.979 ms
+IQR = 274.583 ms, LowerFence = -9.163 ms, UpperFence = 1,089.169 ms
+ConfidenceInterval = [483.914 ms; 605.507 ms] (CI 99.9%), Margin = 60.796 ms (11.16% of Mean)
+Skewness = -0.25, Kurtosis = 2.12, MValue = 2
+-------------------- Histogram --------------------
+[178.397 ms ; 285.065 ms) | @@@@@@@@@
+[285.065 ms ; 367.323 ms) | @@@@@@@@@@@
+[367.323 ms ; 489.073 ms) | @@@@@@@@@@@@@@@@@@
+[489.073 ms ; 597.375 ms) | @@@@@@@@@@@@@@@@@@@@@
+[597.375 ms ; 698.753 ms) | @@@@@@@@@@@@@@@@@@@@@@@@
+[698.753 ms ; 826.886 ms) | @@@@@@@@@@@@@@@
+[826.886 ms ; 927.669 ms) | @@
+---------------------------------------------------
+
+ProcessChainsBenchmark.ProcessJoin: DefaultJob [N=500]
+Runtime = .NET 8.0.3 (8.0.324.11423), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 568.387 ms, StdErr = 22.057 ms (3.88%), N = 100, StdDev = 220.575 ms
+Min = 208.690 ms, Q1 = 348.937 ms, Median = 563.279 ms, Q3 = 773.082 ms, Max = 987.458 ms
+IQR = 424.146 ms, LowerFence = -287.282 ms, UpperFence = 1,409.301 ms
+ConfidenceInterval = [493.578 ms; 643.195 ms] (CI 99.9%), Margin = 74.809 ms (13.16% of Mean)
+Skewness = -0.05, Kurtosis = 1.8, MValue = 4.43
+-------------------- Histogram --------------------
+[203.563 ms ;   326.868 ms) | @@@@@@@@@@@@@@@
+[326.868 ms ;   451.611 ms) | @@@@@@@@@@@@@@@@@@@@@
+[451.611 ms ;   543.536 ms) | @@@@@
+[543.536 ms ;   668.279 ms) | @@@@@@@@@@@@@@@@@@@@@
+[668.279 ms ;   760.439 ms) | @@@@@@@@@
+[760.439 ms ;   885.183 ms) | @@@@@@@@@@@@@@@@@@@@@@@
+[885.183 ms ; 1,003.698 ms) | @@@@@@
+---------------------------------------------------
+
+ProcessChainsBenchmark.ProcessSplit: DefaultJob [N=1000]
+Runtime = .NET 8.0.3 (8.0.324.11423), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 841.502 ms, StdErr = 30.696 ms (3.65%), N = 100, StdDev = 306.956 ms
+Min = 373.065 ms, Q1 = 572.008 ms, Median = 807.952 ms, Q3 = 1,098.913 ms, Max = 1,460.175 ms
+IQR = 526.904 ms, LowerFence = -218.349 ms, UpperFence = 1,889.269 ms
+ConfidenceInterval = [737.397 ms; 945.607 ms] (CI 99.9%), Margin = 104.105 ms (12.37% of Mean)
+Skewness = 0.16, Kurtosis = 1.8, MValue = 4.15
+-------------------- Histogram --------------------
+[  286.267 ms ;   411.114 ms) | @@@@
+[  411.114 ms ;   584.710 ms) | @@@@@@@@@@@@@@@@@@@@@@@@@@
+[  584.710 ms ;   655.164 ms) |
+[  655.164 ms ;   858.920 ms) | @@@@@@@@@@@@@@@@@@@@@@@@
+[  858.920 ms ; 1,032.516 ms) | @@@@@@@@@@@@@@@@
+[1,032.516 ms ; 1,253.835 ms) | @@@@@@@@@@@@@@@@@@@@
+[1,253.835 ms ; 1,416.016 ms) | @@@@@@@@@
+[1,416.016 ms ; 1,546.973 ms) | @
+---------------------------------------------------
+
+ProcessChainsBenchmark.ProcessJoin: DefaultJob [N=1000]
+Runtime = .NET 8.0.3 (8.0.324.11423), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 1.022 s, StdErr = 0.044 s (4.26%), N = 100, StdDev = 0.435 s
+Min = 0.312 s, Q1 = 0.656 s, Median = 1.016 s, Q3 = 1.374 s, Max = 1.810 s
+IQR = 0.718 s, LowerFence = -0.422 s, UpperFence = 2.452 s
+ConfidenceInterval = [0.875 s; 1.170 s] (CI 99.9%), Margin = 0.148 s (14.44% of Mean)
+Skewness = 0.05, Kurtosis = 1.76, MValue = 3.14
+-------------------- Histogram --------------------
+[0.189 s ; 0.434 s) | @@@@@@@@
+[0.434 s ; 0.680 s) | @@@@@@@@@@@@@@@@@@@@@
+[0.680 s ; 0.937 s) | @@@@@@@@@@@@@@@@@@
+[0.937 s ; 1.146 s) | @@@@@@@@@
+[1.146 s ; 1.463 s) | @@@@@@@@@@@@@@@@@@@@@
+[1.463 s ; 1.709 s) | @@@@@@@@@@@@@@@@@@@@
+[1.709 s ; 1.934 s) | @@@
+---------------------------------------------------
+
+ProcessChainsBenchmark.ProcessSplit: DefaultJob [N=2000]
+Runtime = .NET 8.0.3 (8.0.324.11423), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 759.971 ms, StdErr = 27.476 ms (3.62%), N = 100, StdDev = 274.758 ms
+Min = 303.764 ms, Q1 = 530.127 ms, Median = 757.555 ms, Q3 = 998.574 ms, Max = 1,257.094 ms
+IQR = 468.448 ms, LowerFence = -172.545 ms, UpperFence = 1,701.246 ms
+ConfidenceInterval = [666.786 ms; 853.156 ms] (CI 99.9%), Margin = 93.185 ms (12.26% of Mean)
+Skewness = -0.05, Kurtosis = 1.8, MValue = 4.42
+-------------------- Histogram --------------------
+[  290.530 ms ;   445.917 ms) | @@@@@@@@@@@@@@@@@@@
+[  445.917 ms ;   585.168 ms) | @@@@@@@@@
+[  585.168 ms ;   740.555 ms) | @@@@@@@@@@@@@@@@@@@@@
+[  740.555 ms ;   925.371 ms) | @@@@@@@@@@@@@@@@@@@
+[  925.371 ms ;   980.366 ms) | @@
+[  980.366 ms ; 1,135.753 ms) | @@@@@@@@@@@@@@@@@@@@@@@@
+[1,135.753 ms ; 1,282.473 ms) | @@@@@@
+---------------------------------------------------
+
+ProcessChainsBenchmark.ProcessJoin: DefaultJob [N=2000]
+Runtime = .NET 8.0.3 (8.0.324.11423), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 685.230 ms, StdErr = 29.352 ms (4.28%), N = 100, StdDev = 293.519 ms
+Min = 182.642 ms, Q1 = 474.598 ms, Median = 695.742 ms, Q3 = 931.010 ms, Max = 1,219.492 ms
+IQR = 456.411 ms, LowerFence = -210.019 ms, UpperFence = 1,615.627 ms
+ConfidenceInterval = [585.682 ms; 784.778 ms] (CI 99.9%), Margin = 99.548 ms (14.53% of Mean)
+Skewness = -0.02, Kurtosis = 1.89, MValue = 4.32
+-------------------- Histogram --------------------
+[  182.035 ms ;   348.031 ms) | @@@@@@@@@@@@@@@@@@@
+[  348.031 ms ;   488.382 ms) | @@@@@@
+[  488.382 ms ;   654.379 ms) | @@@@@@@@@@@@@@@@@@@@@@@
+[  654.379 ms ;   869.447 ms) | @@@@@@@@@@@@@@@@@@@@@@@@@
+[  869.447 ms ;   944.500 ms) | @@
+[  944.500 ms ; 1,110.497 ms) | @@@@@@@@@@@@@@@@@@
+[1,110.497 ms ; 1,302.490 ms) | @@@@@@@
+---------------------------------------------------
+
+ProcessChainsBenchmark.ProcessSplit: DefaultJob [N=5000]
+Runtime = .NET 8.0.3 (8.0.324.11423), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 1.724 s, StdErr = 0.074 s (4.29%), N = 100, StdDev = 0.739 s
+Min = 0.534 s, Q1 = 1.090 s, Median = 1.713 s, Q3 = 2.341 s, Max = 3.787 s
+IQR = 1.251 s, LowerFence = -0.787 s, UpperFence = 4.218 s
+ConfidenceInterval = [1.473 s; 1.974 s] (CI 99.9%), Margin = 0.251 s (14.54% of Mean)
+Skewness = 0.24, Kurtosis = 2.18, MValue = 3
+-------------------- Histogram --------------------
+[0.325 s ; 0.612 s) | @
+[0.612 s ; 1.030 s) | @@@@@@@@@@@@@@@@@@@@@@
+[1.030 s ; 1.439 s) | @@@@@@@@@@@@@@@
+[1.439 s ; 1.857 s) | @@@@@@@@@@@@@@@@@@@@@
+[1.857 s ; 2.304 s) | @@@@@@@@@@@@@@
+[2.304 s ; 2.722 s) | @@@@@@@@@@@@@@@@@@@
+[2.722 s ; 3.096 s) | @@@@@@
+[3.096 s ; 3.578 s) | @
+[3.578 s ; 3.996 s) | @
+---------------------------------------------------
+
+ProcessChainsBenchmark.ProcessJoin: DefaultJob [N=5000]
+Runtime = .NET 8.0.3 (8.0.324.11423), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 1.614 s, StdErr = 0.071 s (4.42%), N = 100, StdDev = 0.713 s
+Min = 0.421 s, Q1 = 1.023 s, Median = 1.573 s, Q3 = 2.294 s, Max = 2.836 s
+IQR = 1.271 s, LowerFence = -0.884 s, UpperFence = 4.202 s
+ConfidenceInterval = [1.372 s; 1.856 s] (CI 99.9%), Margin = 0.242 s (14.99% of Mean)
+Skewness = 0.03, Kurtosis = 1.68, MValue = 3.74
+-------------------- Histogram --------------------
+[0.375 s ; 0.769 s) | @@@@@@@@@@@@@
+[0.769 s ; 1.172 s) | @@@@@@@@@@@@@@@@@@@@@
+[1.172 s ; 1.540 s) | @@@@@@@@@@@@@
+[1.540 s ; 1.943 s) | @@@@@@@@@@@@@@@@@@
+[1.943 s ; 2.228 s) | @@@@@@
+[2.228 s ; 2.632 s) | @@@@@@@@@@@@@@@@@@@@@@@
+[2.632 s ; 3.037 s) | @@@@@@
+---------------------------------------------------
+
+ProcessChainsBenchmark.ProcessSplit: DefaultJob [N=10000]
+Runtime = .NET 8.0.3 (8.0.324.11423), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 3.259 s, StdErr = 0.137 s (4.19%), N = 100, StdDev = 1.366 s
+Min = 0.964 s, Q1 = 2.064 s, Median = 3.247 s, Q3 = 4.291 s, Max = 5.663 s
+IQR = 2.227 s, LowerFence = -1.276 s, UpperFence = 7.631 s
+ConfidenceInterval = [2.795 s; 3.722 s] (CI 99.9%), Margin = 0.463 s (14.22% of Mean)
+Skewness = 0.07, Kurtosis = 1.81, MValue = 5.64
+-------------------- Histogram --------------------
+[0.577 s ; 1.125 s) | @@@
+[1.125 s ; 1.898 s) | @@@@@@@@@@@@@@@@@@@@
+[1.898 s ; 2.297 s) | @@@@@@
+[2.297 s ; 3.070 s) | @@@@@@@@@@@@@@@@@@@
+[3.070 s ; 3.446 s) | @@@@
+[3.446 s ; 4.219 s) | @@@@@@@@@@@@@@@@@@@@@@
+[4.219 s ; 4.684 s) | @@@@@@
+[4.684 s ; 5.456 s) | @@@@@@@@@@@@@@@@@
+[5.456 s ; 6.049 s) | @@@
+---------------------------------------------------
+
+ProcessChainsBenchmark.ProcessJoin: DefaultJob [N=10000]
+Runtime = .NET 8.0.3 (8.0.324.11423), X64 RyuJIT AVX2; GC = Concurrent Workstation
+Mean = 3.305 s, StdErr = 0.143 s (4.33%), N = 100, StdDev = 1.432 s
+Min = 0.973 s, Q1 = 2.074 s, Median = 3.276 s, Q3 = 4.693 s, Max = 5.817 s
+IQR = 2.619 s, LowerFence = -1.854 s, UpperFence = 8.622 s
+ConfidenceInterval = [2.819 s; 3.790 s] (CI 99.9%), Margin = 0.486 s (14.70% of Mean)
+Skewness = 0.07, Kurtosis = 1.73, MValue = 6
+-------------------- Histogram --------------------
+[0.947 s ; 1.757 s) | @@@@@@@@@@@@@@@@@@
+[1.757 s ; 2.066 s) | @@@@@@@
+[2.066 s ; 2.876 s) | @@@@@@@@@@@@@@@@@@@@
+[2.876 s ; 3.314 s) | @@@@@
+[3.314 s ; 4.124 s) | @@@@@@@@@@@@@@@@@@@@
+[4.124 s ; 4.580 s) | @@
+[4.580 s ; 5.390 s) | @@@@@@@@@@@@@@@@@@@@@@
+[5.390 s ; 6.222 s) | @@@@@@
+---------------------------------------------------
+
+// * Summary *
+
+BenchmarkDotNet v0.13.12, Windows 11 (10.0.22631.3447/23H2/2023Update/SunValley3)
+Intel Core i7-8750H CPU 2.20GHz (Coffee Lake), 1 CPU, 12 logical and 6 physical cores
+.NET SDK 8.0.202
+  [Host]     : .NET 8.0.3 (8.0.324.11423), X64 RyuJIT AVX2
+  DefaultJob : .NET 8.0.3 (8.0.324.11423), X64 RyuJIT AVX2
+
+
+| Method       | N     | Mean       | Error     | StdDev      | Median     |
+|------------- |------ |-----------:|----------:|------------:|-----------:|
+| ProcessSplit | 100   |   294.3 ms |  20.29 ms |    59.84 ms |   265.6 ms |
+| ProcessJoin  | 100   |   211.9 ms |   1.41 ms |     1.32 ms |   212.0 ms |
+| ProcessSplit | 200   |   245.4 ms |   2.17 ms |     2.03 ms |   245.2 ms |
+| ProcessJoin  | 200   |   433.9 ms |  55.19 ms |   162.74 ms |   427.2 ms |
+| ProcessSplit | 500   |   544.7 ms |  60.80 ms |   179.26 ms |   565.7 ms |
+| ProcessJoin  | 500   |   568.4 ms |  74.81 ms |   220.57 ms |   563.3 ms |
+| ProcessSplit | 1000  |   841.5 ms | 104.11 ms |   306.96 ms |   808.0 ms |
+| ProcessJoin  | 1000  | 1,022.3 ms | 147.65 ms |   435.36 ms | 1,015.8 ms |
+| ProcessSplit | 2000  |   760.0 ms |  93.18 ms |   274.76 ms |   757.6 ms |
+| ProcessJoin  | 2000  |   685.2 ms |  99.55 ms |   293.52 ms |   695.7 ms |
+| ProcessSplit | 5000  | 1,723.6 ms | 250.63 ms |   738.99 ms | 1,713.5 ms |
+| ProcessJoin  | 5000  | 1,614.2 ms | 241.93 ms |   713.33 ms | 1,572.8 ms |
+| ProcessSplit | 10000 | 3,258.7 ms | 463.41 ms | 1,366.38 ms | 3,247.1 ms |
+| ProcessJoin  | 10000 | 3,304.5 ms | 485.63 ms | 1,431.90 ms | 3,276.1 ms |
+
+// * Warnings *
+MultimodalDistribution
+  ProcessChainsBenchmark.ProcessSplit: Default -> It seems that the distribution is multimodal (mValue = 4.69)
+  ProcessChainsBenchmark.ProcessJoin: Default  -> It seems that the distribution can have several modes (mValue = 2.97)
+  ProcessChainsBenchmark.ProcessJoin: Default  -> It seems that the distribution is multimodal (mValue = 4.43)
+  ProcessChainsBenchmark.ProcessSplit: Default -> It seems that the distribution is bimodal (mValue = 4.15)
+  ProcessChainsBenchmark.ProcessJoin: Default  -> It seems that the distribution can have several modes (mValue = 3.14)
+  ProcessChainsBenchmark.ProcessSplit: Default -> It seems that the distribution is multimodal (mValue = 4.42)
+  ProcessChainsBenchmark.ProcessJoin: Default  -> It seems that the distribution is multimodal (mValue = 4.32)
+  ProcessChainsBenchmark.ProcessSplit: Default -> It seems that the distribution can have several modes (mValue = 3)
+  ProcessChainsBenchmark.ProcessJoin: Default  -> It seems that the distribution is bimodal (mValue = 3.74)
+  ProcessChainsBenchmark.ProcessSplit: Default -> It seems that the distribution is multimodal (mValue = 5.64)
+  ProcessChainsBenchmark.ProcessJoin: Default  -> It seems that the distribution is multimodal (mValue = 6)
+
+// * Legends *
+  N      : Value of the 'N' parameter
+  Mean   : Arithmetic mean of all measurements
+  Error  : Half of 99.9% confidence interval
+  StdDev : Standard deviation of all measurements
+  Median : Value separating the higher half of all measurements (50th percentile)
+  1 ms   : 1 Millisecond (0.001 sec)
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:47:18 (2838.23 sec), executed benchmarks: 14
+
+Global total time: 00:47:28 (2848.84 sec), executed benchmarks: 14
+// * Artifacts cleanup *
+Artifacts cleanup is finished
+
+Process finished with exit code 0.

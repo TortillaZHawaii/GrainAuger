@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrainAuger", "GrainAuger\Gr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{BB9DEF98-8801-44A5-A179-4B3E1073F261}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrainAuger.Benchmarks", "GrainAuger.Benchmarks\GrainAuger.Benchmarks.csproj", "{E0A96357-3266-4DDB-B73E-6B0237D00BA5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +83,10 @@ Global
 		{FADC17AA-4BAD-4CC9-9B3E-7C0C2935B276}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FADC17AA-4BAD-4CC9-9B3E-7C0C2935B276}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FADC17AA-4BAD-4CC9-9B3E-7C0C2935B276}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0A96357-3266-4DDB-B73E-6B0237D00BA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0A96357-3266-4DDB-B73E-6B0237D00BA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0A96357-3266-4DDB-B73E-6B0237D00BA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0A96357-3266-4DDB-B73E-6B0237D00BA5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -94,6 +100,7 @@ Global
 		{9EC6BF3A-3BC3-4656-87FC-C1BAAAC78251} = {09EC927A-1A87-49AA-9AD0-DCEE6AC6E023}
 		{DC5C3A57-60D2-499A-B3BB-A07F84023451} = {D4912921-9691-44C9-A182-32217FD5BF45}
 		{8613E8C5-E25F-423E-A062-38FD327DE739} = {DC5C3A57-60D2-499A-B3BB-A07F84023451}
+		{E0A96357-3266-4DDB-B73E-6B0237D00BA5} = {BB9DEF98-8801-44A5-A179-4B3E1073F261}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {40EF1F84-B661-455B-B88E-D45C8EA8F568}
