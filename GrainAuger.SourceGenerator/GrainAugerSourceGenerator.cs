@@ -81,7 +81,6 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         
         var grainCodes = new List<string>();
         var statements = GetStatements(methodDeclaration.Body!);
-        var constructors = new List<string>();
 
         var dag = new Dictionary<string, DagNode>();
 
@@ -117,19 +116,36 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                 {
                     var inputName = memberAccessExpression.Expression.ToString();
                     var outputName = localDeclarationStatement.Declaration.Variables.First().Identifier.ToString();
-                    var constructorsMerged = genericTypes
-                        .Select(genericType => GetConstructors(genericType, semanticModel));
             
-                    constructors.AddRange(constructorsMerged.SelectMany(c => c).Select(c => c.ToDisplayString()));
                     grainCodes.Add($"{inputName} -[{string.Join(", ", genericTypes)}]-> {outputName}");
                     
                     var arguments = invocation.ArgumentList.Arguments;
                     
                     var streamNamespace = arguments[0].Expression.ToString();
+
+                    var constructors = GetConstructors(genericTypes.Last(), semanticModel);
+                    if (constructors.Count() != 1)
+                    {
+                        // put a warning in the analyzer
+                        continue;
+                    }
+                    
+                    var output = constructors.First().Parameters
+                        .Where(p => p.Type.OriginalDefinition.ToDisplayString() == "Orleans.Streams.IAsyncObserver<T>")
+                        .Select(p => p.Type as INamedTypeSymbol)
+                        .Select(p => p!.TypeArguments.First())
+                        .FirstOrDefault();
+                    
+                    if (output is null)
+                    {
+                        // put a warning in the analyzer
+                        continue;
+                    }
                     
                     dag.Add(outputName, new ProcessNode(
                         dag[inputName],
                         genericTypes,
+                        output,
                         streamNamespace));
                 }
                 else if (name == "FromStream")
@@ -173,11 +189,6 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         /*
         Found Dag for job {{jobName}}:
         {{string.Join("\n", grainCodes)}}
-        */
-        
-        /* 
-        Found constructors:
-        {{string.Join("\n", constructors)}}
         */
         
         {{string.Join("\n\n", processGrainCodes)}}

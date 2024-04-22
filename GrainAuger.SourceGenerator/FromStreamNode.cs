@@ -22,12 +22,13 @@ internal record FromStreamNode(
 internal record ProcessNode(
     DagNode PreviousNode,
     ImmutableArray<ITypeSymbol> AugerTypes,
+    ITypeSymbol OutputType,
     string StreamNamespace
 ) : DagNode(
     StreamNamespace,
     PreviousNode.StreamProvider,
-    AugerTypes.First(),
-    AugerTypes.First()
+    OutputType,
+    PreviousNode.KeyType
 );
 
 internal record Processor(
