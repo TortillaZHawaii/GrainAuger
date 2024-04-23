@@ -294,8 +294,11 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             
             public override async Task OnActivateAsync(CancellationToken cancellationToken)
             {
-                logger.LogInformation("Activating...");
-                
+                if (logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
+                {
+                    global::Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(logger, "Activating...");
+                }         
+                       
                 await base.OnActivateAsync(cancellationToken);
                 
                 var inputStreamProvider = this.GetStreamProvider({{node.PreviousNode.StreamProvider}});
@@ -310,12 +313,18 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                 
                 await inputStream.SubscribeAsync(this);
                 
-                logger.LogInformation("Activated");
+                if (logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
+                {
+                    global::Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(logger, "Activated");
+                }
             }
             
             public async Task OnNextAsync({{inputType}} item, global::Orleans.Streams.StreamSequenceToken? token = null)
             {
-                logger.LogInformation("Processing {item}", item);
+                if (logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
+                {
+                    global::Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(logger, "Processing {item}", item);
+                }
                 await {{firstProcessorName}}.OnNextAsync(item, token);                
             }
             
@@ -326,7 +335,10 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             
             public async Task OnErrorAsync(Exception ex)
             {
-                logger.LogError(ex, "Error occurred");
+                if (logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Error))
+                {
+                    global::Microsoft.Extensions.Logging.LoggerExtensions.LogError(logger, "Error occurred");
+                }
                 await {{firstProcessorName}}.OnErrorAsync(ex);
             }
         }
