@@ -71,6 +71,21 @@ namespace GrainAuger.Core
             return outputStream;
         }
         
+        public IAugerStream KeyBy(string name, Func<dynamic, Guid> keySelector)
+        {
+            throw new NotImplementedException();
+        }
+        
+        public IAugerStream KeyBy(string name, Func<dynamic, string> keySelector)
+        {
+            throw new NotImplementedException();
+        }
+        
+        public IAugerStream KeyBy(string name, Func<dynamic, int> keySelector)
+        {
+            throw new NotImplementedException();
+        }
+        
         private (Type processorType, Type outputType) GetProcessorTypes<T>(Type previousOutputType)
         {
             Type type = typeof(T);
