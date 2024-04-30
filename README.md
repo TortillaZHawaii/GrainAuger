@@ -136,5 +136,6 @@ private readonly global::WordCount.WordCounter _processor0;
 ## Related Work
 
 - [Microsoft Orleans](https://learn.microsoft.com/en-us/dotnet/orleans/): Orleans is a framework for building distributed systems in .NET. It provides a simple programming model for building distributed applications using the actor model. Orleans streams are a powerful abstraction for building scalable and fault-tolerant data processing pipelines.
+- [Orleans Virtual Actors](https://www.microsoft.com/en-us/research/project/orleans-virtual-actors/): Virtual actors are a powerful abstraction for building scalable and fault-tolerant distributed systems. They provide a simple programming model for building distributed applications using the actor model. Virtual actors are a key feature of the Orleans framework.
 - [Apache Beam](https://beam.apache.org/): Beam is a unified programming model for building batch and streaming data processing pipelines. It provides a high-level API for defining data processing pipelines that can be executed on a variety of distributed processing backends.
 - [Apache Flink](https://flink.apache.org/): Flink is a distributed stream processing framework for building real-time data processing applications. It provides a high-level API for defining data processing pipelines that can be executed on a distributed cluster.
