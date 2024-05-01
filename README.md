@@ -133,6 +133,13 @@ private readonly global::WordCount.WordCounter _processor0;
 
 </details>
 
+## Limitations
+
+As of now, Grain Auger has the following limitations:
+- The DSL is not fully implemented and is still a work in progress. The current implementation is a proof of concept and is not feature-complete. For example user cannot chain multiple processors without defining a variable for each processor.
+- Source generated code is not being read by Orleans source generators. This in turn requires user to manually copy generated files and save them to the drive. Read more about this limitation [here](https://github.com/dotnet/roslyn/issues/57239#issue-1030698206).
+
+
 ## Related Work
 
 - [Microsoft Orleans](https://learn.microsoft.com/en-us/dotnet/orleans/): Orleans is a framework for building distributed systems in .NET. It provides a simple programming model for building distributed applications using the actor model. Orleans streams are a powerful abstraction for building scalable and fault-tolerant data processing pipelines.
