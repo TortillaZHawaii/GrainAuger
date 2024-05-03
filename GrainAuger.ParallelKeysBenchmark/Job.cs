@@ -20,7 +20,7 @@ public class RomanToIntegerTransform(IAsyncObserver<int> output) : IAsyncObserve
     private int RomanToInteger(string item)
     {
         int number = 0;
-        item
+        item = item
             .Replace("IV", "IIII")
             .Replace("IX", "VIIII")
             .Replace("XL", "XXXX")
