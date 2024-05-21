@@ -8,12 +8,10 @@ public class SessionWindowAuger<T>(
     IAsyncObserver<List<T>> output,
     // this should be configurable
     IPersistentState<List<T>> currentWindowState,
-    IAugerContext context
+    IAugerContext context,
+    TimeSpan sessionTimeout
 ) : IAsyncObserver<T>
 {
-    // this should be configurable
-    private readonly TimeSpan _windowGap = TimeSpan.FromMinutes(1);
-    
     private IDisposable? _timer;
     
     private async Task DumpWindow(object _)
@@ -30,7 +28,7 @@ public class SessionWindowAuger<T>(
     
     public async Task OnNextAsync(T item, StreamSequenceToken? token = null)
     {
-        _timer ??= context.RegisterTimer(DumpWindow, new object(), _windowGap, _windowGap);
+        _timer ??= context.RegisterTimer(DumpWindow, new object(), sessionTimeout, sessionTimeout);
         
         currentWindowState.State.Add(item);
         await currentWindowState.WriteStateAsync();

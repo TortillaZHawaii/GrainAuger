@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using GrainAuger.Abstractions;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 
 #nullable enable
@@ -40,7 +41,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         {
             foreach (var attributeSyntax in attributeListSyntax.Attributes)
             {
-                if (context.SemanticModel.GetSymbolInfo(attributeSyntax).Symbol is not IMethodSymbol attributeSymbol)
+                if (ModelExtensions.GetSymbolInfo(context.SemanticModel, attributeSyntax).Symbol is not IMethodSymbol attributeSymbol)
                 {
                     continue;
                 }
@@ -71,7 +72,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
     {
         var semanticModel = compilation.GetSemanticModel(methodDeclaration.SyntaxTree);
         
-        if (semanticModel.GetDeclaredSymbol(methodDeclaration) is not IMethodSymbol methodSymbol)
+        if (ModelExtensions.GetDeclaredSymbol(semanticModel, methodDeclaration) is not IMethodSymbol methodSymbol)
         {
             return;
         }
@@ -194,7 +195,23 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         {{string.Join("\n\n", processGrainCodes)}}
         """;
         
-        context.AddSource($"{jobName}.g.cs", SourceText.From(code, Encoding.UTF8));
+        string hintName = $"{namespaceName}.{jobName}.g.cs";
+        context.AddSource(hintName, SourceText.From(code, Encoding.UTF8));
+        RunOrleansSourceGeneration(context, hintName, SyntaxFactory.ParseSyntaxTree(code));
+    }
+    
+    private void RunOrleansSourceGeneration(SourceProductionContext context, string hintName, SyntaxTree syntaxTree)
+    {
+        string assemblyName = "Orleans.CodeGenerator";
+        string className = "Orleans.CodeGenerator.OrleansSerializationSourceGenerator";
+        var orleansCodeGeneratorType = Type.GetType(
+            $"{className}, {assemblyName}"
+        )!;
+        
+        var orleansCodeGenerator = ((ISourceGenerator)Activator.CreateInstance(orleansCodeGeneratorType)!);
+        var generators = new[] { orleansCodeGenerator };
+        
+        GeneratorRunner.Run(context, hintName, generators, syntaxTree);
     }
 
     private static string GenerateProcessGrainCode(string keyName, ProcessNode node, SemanticModel semanticModel)
@@ -380,7 +397,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
     
     private static ImmutableArray<ITypeSymbol> GetGenericTypes(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
     {
-        var symbol = semanticModel.GetSymbolInfo(invocation).Symbol;
+        var symbol = ModelExtensions.GetSymbolInfo(semanticModel, invocation).Symbol;
         return symbol is not IMethodSymbol method ? [] : method.TypeArguments;
     }
     
