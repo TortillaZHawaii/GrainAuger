@@ -103,7 +103,11 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             var invocation = statement.DescendantNodes().OfType<InvocationExpressionSyntax>().FirstOrDefault();
             if (invocation is null)
             {
-                continue;
+                context.ReportDiagnostic(Diagnostic.Create(
+                    new DiagnosticDescriptor("GA002", "Invalid statement", "Expected to find Process or FromStream method", "GrainAuger",
+                        DiagnosticSeverity.Error, true),
+                    statement.GetLocation()));
+                return;
             }
             
             var genericTypes = GetGenericTypes(invocation, semanticModel);
@@ -167,6 +171,13 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                         genericTypes.Last()
                         ));
                 }
+                else
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        new DiagnosticDescriptor("GA002", "Invalid statement", "Expected to find Process or FromStream method", "GrainAuger",
+                            DiagnosticSeverity.Error, true),
+                        statement.GetLocation()));
+                }
             }
             else
             {
@@ -194,10 +205,11 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         
         {{string.Join("\n\n", processGrainCodes)}}
         """;
-        
-        string hintName = $"{namespaceName}.{jobName}.g.cs";
+
+        string hintNamePrefix = $"{namespaceName}.{jobName}";
+        string hintName = $"{hintNamePrefix}.auger.g.cs";
         context.AddSource(hintName, SourceText.From(code, Encoding.UTF8));
-        RunOrleansSourceGeneration(context, compilation, hintName, SyntaxFactory.ParseSyntaxTree(code));
+        RunOrleansSourceGeneration(context, compilation, hintNamePrefix, SyntaxFactory.ParseSyntaxTree(code));
     }
     
     private void RunOrleansSourceGeneration(SourceProductionContext context, Compilation compilation, string hintName, SyntaxTree syntaxTree)
