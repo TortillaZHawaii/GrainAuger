@@ -9,6 +9,7 @@ abstract class WordCountJobConfiguration
     {
         var inputStream = builder.FromStream<string, string>("MemoryStream", "WordCountInput");
 
-        var wordCountStream = inputStream.Process<WordCounter>("wordCounterStream");
+        var wordCountStream = inputStream
+            .Process<WordCounter>("wordCounterStream");
     }
 }

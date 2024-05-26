@@ -84,6 +84,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         var statements = GetStatements(methodDeclaration.Body!);
 
         var dag = new Dictionary<string, DagNode>();
+        bool hasErrors = false;
 
         foreach (var statement in statements)
         {
@@ -107,7 +108,8 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                     new DiagnosticDescriptor("GA002", "Invalid statement", "Expected to find Process or FromStream method", "GrainAuger",
                         DiagnosticSeverity.Error, true),
                     statement.GetLocation()));
-                return;
+                hasErrors = true;
+                continue;
             }
             
             var genericTypes = GetGenericTypes(invocation, semanticModel);
@@ -116,6 +118,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
 
             if (invocation.Expression is MemberAccessExpressionSyntax memberAccessExpression)
             {
+                
                 var name = memberAccessExpression.Name.Identifier.ToString();
                 if (name == "Process")
                 {
@@ -128,10 +131,16 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                     
                     var streamNamespace = arguments[0].Expression.ToString();
 
-                    var constructors = GetConstructors(genericTypes.Last(), semanticModel);
+                    var constructors = GetPublicConstructors(genericTypes.Last(), semanticModel);
                     if (constructors.Count() != 1)
                     {
                         // put a warning in the analyzer
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            new DiagnosticDescriptor("GA003", "Invalid constructors", 
+                                "Auger should have exactly one public constructor", "GrainAuger",
+                                DiagnosticSeverity.Error, true),
+                            genericTypes.Last().OriginalDefinition.Locations.First()));
+                        hasErrors = true;
                         continue;
                     }
                     
@@ -144,6 +153,12 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                     if (output is null)
                     {
                         // put a warning in the analyzer
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            new DiagnosticDescriptor("GA004", "Invalid output", 
+                                "Auger should have exactly one public constructor with IAsyncObserver<T> parameter", "GrainAuger",
+                                DiagnosticSeverity.Error, true),
+                            genericTypes.Last().OriginalDefinition.Locations.First()));
+                        hasErrors = true;
                         continue;
                     }
                     
@@ -177,6 +192,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                         new DiagnosticDescriptor("GA002", "Invalid statement", "Expected to find Process or FromStream method", "GrainAuger",
                             DiagnosticSeverity.Error, true),
                         statement.GetLocation()));
+                    hasErrors = true;
                 }
             }
             else
@@ -185,7 +201,13 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                     new DiagnosticDescriptor("GA002", "Invalid statement", "Expected to find Process or FromStream method", "GrainAuger",
                         DiagnosticSeverity.Error, true),
                     statement.GetLocation()));
+                hasErrors = true;
             }
+        }
+        
+        if (hasErrors)
+        {
+            return;
         }
         
         var processGrainCodes = dag
@@ -261,7 +283,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         
         foreach (var augerType in node.AugerTypes.Reverse())
         {
-            var constructors = GetConstructors(augerType, semanticModel);
+            var constructors = GetPublicConstructors(augerType, semanticModel);
             if (constructors.Count() != 1)
             {
                 continue;
@@ -422,12 +444,12 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         return symbol is not IMethodSymbol method ? [] : method.TypeArguments;
     }
     
-    private static ImmutableArray<IMethodSymbol> GetConstructors(ITypeSymbol genericType, SemanticModel semanticModel)
+    private static ImmutableArray<IMethodSymbol> GetPublicConstructors(ITypeSymbol genericType, SemanticModel semanticModel)
     {
         var constructors = genericType
             .GetMembers()
             .OfType<IMethodSymbol>()
-            .Where(m => m.MethodKind == MethodKind.Constructor)
+            .Where(m => m.MethodKind == MethodKind.Constructor && m.DeclaredAccessibility == Accessibility.Public)
             .ToImmutableArray();
         return constructors;
     }
