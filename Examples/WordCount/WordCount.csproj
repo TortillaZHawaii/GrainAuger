@@ -8,6 +8,11 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.3"/>
+<!--        <PackageReference Include="Microsoft.Orleans.CodeGenerator" Version="8.0.0">-->
+<!--          <PrivateAssets>all</PrivateAssets>-->
+<!--            <IncludeAssets>runtime; build; native; contentfiles; buildtransitive</IncludeAssets>-->
+<!--&lt;!&ndash;            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>&ndash;&gt;-->
+<!--        </PackageReference>-->
         <PackageReference Include="Microsoft.Orleans.Server" Version="8.0.0" />
         <PackageReference Include="OrleansDashboard" Version="8.0.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
@@ -17,5 +22,14 @@
       <ProjectReference Include="..\..\GrainAuger\GrainAuger.csproj" />
       <ProjectReference Include="..\..\GrainAuger.SourceGenerator\GrainAuger.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
     </ItemGroup>
-
+    
+    <Target 
+        Name="DisableOrleansAnalyzer"
+        BeforeTargets="CoreCompile">
+        <ItemGroup>
+<!--                <Analyzer -->
+<!--                        Remove="@(Analyzer)"-->
+<!--                        Condition="'%(Filename)' == 'Orleans.CodeGenerator'" />-->
+        </ItemGroup>
+    </Target>
 </Project>

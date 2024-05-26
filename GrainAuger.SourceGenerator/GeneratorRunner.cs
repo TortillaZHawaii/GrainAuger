@@ -14,15 +14,14 @@ namespace GrainAuger.SourceGenerator;
 public class GeneratorRunner
 {
     public static void Run(
-        SourceProductionContext context,
+        SourceProductionContext context, 
+        Compilation compilation,
         string hintNamePrefix,
         ISourceGenerator[] generators,
         params SyntaxTree[] syntaxTrees)
     {
-        var compilation = CSharpCompilation.Create(
-            null,
-            syntaxTrees);
-
+        compilation = compilation.AddSyntaxTrees(syntaxTrees);
+        
         GeneratorDriver driver = CSharpGeneratorDriver.Create(generators);
 
         driver = driver.RunGenerators(compilation, context.CancellationToken);
@@ -35,7 +34,8 @@ public class GeneratorRunner
 
         foreach (var generatedSource in runResult.Results.SelectMany(result => result.GeneratedSources))
         {
-            context.AddSource(GetHintName(generatedSource.HintName), generatedSource.SourceText);
+            var source = "/*\n" + generatedSource.SourceText + "\n*/";
+            context.AddSource(GetHintName(generatedSource.HintName), source);
         }
 
         void ReportDiagnostic(Diagnostic diagnostic)
@@ -62,8 +62,8 @@ public class GeneratorRunner
         {
             return hintNamePrefix switch
             {
-                _ when hintNamePrefix.EndsWith(".g.cs") => hintNamePrefix.Substring(0, hintNamePrefix.Length - ".g.cs".Length),
-                _ when hintNamePrefix.EndsWith(".cs") => hintNamePrefix.Substring(0, hintNamePrefix.Length - ".cs".Length),
+                _ when hintNamePrefix.EndsWith(".g.cs") => hintNamePrefix.Substring(0, hintNamePrefix.Length - ".xd.g.cs".Length),
+                _ when hintNamePrefix.EndsWith(".cs") => hintNamePrefix.Substring(0, hintNamePrefix.Length - ".xd.cs".Length),
                 _ => hintNamePrefix,
             } + "__" + nestedHintName;
         }
