@@ -61,20 +61,31 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
     private void GenerateJobs(SourceProductionContext context, Compilation compilation,
         ImmutableArray<MethodDeclarationSyntax> methodDeclarations)
     {
+        List<SyntaxTree> syntaxTrees = new()
+        {
+            Capacity = methodDeclarations.Length
+        };
+        
         foreach (var methodDeclaration in methodDeclarations)
         {
-            GenerateJob(context, compilation, methodDeclaration);
+            var tree = GenerateJob(context, compilation, methodDeclaration);
+            if (tree is not null)
+            {
+                syntaxTrees.Add(tree);
+            }
         }
+
+        RunOrleansSourceGeneration(context, compilation, "", syntaxTrees.ToArray());
     }
 
-    private void GenerateJob(SourceProductionContext context, Compilation compilation,
+    private SyntaxTree? GenerateJob(SourceProductionContext context, Compilation compilation,
         MethodDeclarationSyntax methodDeclaration)
     {
         var semanticModel = compilation.GetSemanticModel(methodDeclaration.SyntaxTree);
         
         if (ModelExtensions.GetDeclaredSymbol(semanticModel, methodDeclaration) is not IMethodSymbol methodSymbol)
         {
-            return;
+            return null;
         }
         
         var namespaceName = $"GrainAugerCodeGen.{GetNamespaceName(methodSymbol)}";
@@ -207,7 +218,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         
         if (hasErrors)
         {
-            return;
+            return null;
         }
         
         var processGrainCodes = dag
@@ -231,10 +242,12 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         string hintNamePrefix = $"{namespaceName}.{jobName}";
         string hintName = $"{hintNamePrefix}.auger.g.cs";
         context.AddSource(hintName, SourceText.From(code, Encoding.UTF8));
-        RunOrleansSourceGeneration(context, compilation, hintNamePrefix, SyntaxFactory.ParseSyntaxTree(code));
+        
+        return SyntaxFactory.ParseSyntaxTree(code);
     }
     
-    private void RunOrleansSourceGeneration(SourceProductionContext context, Compilation compilation, string hintName, SyntaxTree syntaxTree)
+    private void RunOrleansSourceGeneration(SourceProductionContext context, Compilation compilation, string hintName,
+        params SyntaxTree[] syntaxTrees)
     {
         string assemblyName = "Orleans.CodeGenerator";
         string className = "Orleans.CodeGenerator.OrleansSerializationSourceGenerator";
@@ -254,7 +267,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         var orleansCodeGenerator = ((ISourceGenerator)Activator.CreateInstance(orleansCodeGeneratorType)!);
         var generators = new[] { orleansCodeGenerator };
         
-        GeneratorRunner.Run(context, compilation, hintName, generators, syntaxTree);
+        GeneratorRunner.Run(context, compilation, hintName, generators, syntaxTrees);
     }
 
     private static string GenerateProcessGrainCode(string keyName, ProcessNode node, SemanticModel semanticModel)
