@@ -37,6 +37,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrainAuger.Windows", "Grain
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WordCount.Test", "Examples\WordCount.Test\WordCount.Test.csproj", "{CAF56FEF-1FEA-4505-97A5-A198F0BB5734}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrainAuger.LoadBalancers.Test", "test\GrainAuger.LoadBalancers.Test\GrainAuger.LoadBalancers.Test.csproj", "{207C1EB4-FD75-4F82-AD8D-EF8674C58CD7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,10 @@ Global
 		{CAF56FEF-1FEA-4505-97A5-A198F0BB5734}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CAF56FEF-1FEA-4505-97A5-A198F0BB5734}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CAF56FEF-1FEA-4505-97A5-A198F0BB5734}.Release|Any CPU.Build.0 = Release|Any CPU
+		{207C1EB4-FD75-4F82-AD8D-EF8674C58CD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{207C1EB4-FD75-4F82-AD8D-EF8674C58CD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{207C1EB4-FD75-4F82-AD8D-EF8674C58CD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{207C1EB4-FD75-4F82-AD8D-EF8674C58CD7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,6 +110,7 @@ Global
 		{E0A96357-3266-4DDB-B73E-6B0237D00BA5} = {BB9DEF98-8801-44A5-A179-4B3E1073F261}
 		{25804066-612A-468B-B8A3-758C2932992A} = {BB9DEF98-8801-44A5-A179-4B3E1073F261}
 		{CAF56FEF-1FEA-4505-97A5-A198F0BB5734} = {DC5C3A57-60D2-499A-B3BB-A07F84023451}
+		{207C1EB4-FD75-4F82-AD8D-EF8674C58CD7} = {09EC927A-1A87-49AA-9AD0-DCEE6AC6E023}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {40EF1F84-B661-455B-B88E-D45C8EA8F568}
