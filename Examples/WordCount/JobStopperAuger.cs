@@ -19,12 +19,12 @@ public class JobStopperAuger(IAsyncObserver<string> output, IFeatureFlagService 
     
     /* ... */
     
-    public async Task OnCompletedAsync()
+    public Task OnCompletedAsync()
     {
         throw new NotImplementedException();
     }
 
-    public async Task OnErrorAsync(Exception ex)
+    public Task OnErrorAsync(Exception ex)
     {
         throw new NotImplementedException();
     }

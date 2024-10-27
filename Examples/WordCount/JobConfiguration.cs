@@ -10,11 +10,9 @@ abstract class WordCountJobConfigurationWithStopper
         var inputStream = builder.FromStream<string, string>("MemoryStream", "WordCountInput");
         
         // This auger will only pass through items if the "WordFilterJob" feature flag is enabled.
-        var enabledStream = inputStream
-            .Process<JobStopperAuger>("jobStopperStream");
+        var enabledStream = inputStream.Process<JobStopperAuger>();
         
         // Rest of the job configuration
-        var wordCountStream = enabledStream
-            .Process<WordCounter>("wordCounterStream");
+        var countStream = enabledStream.Process<WordCounter>();
     }
 }

@@ -125,22 +125,34 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             
             var genericTypes = GetGenericTypes(invocation, semanticModel);
             
-            var localDeclarationStatement = (LocalDeclarationStatementSyntax)statement;
+            if (statement is not LocalDeclarationStatementSyntax localDeclarationStatement)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    new DiagnosticDescriptor("GA00Y", "Invalid statement", "Expected to find Process or FromStream method", "GrainAuger",
+                        DiagnosticSeverity.Error, true),
+                    statement.GetLocation()));
+                hasErrors = true;
+                continue;
+            }
 
             if (invocation.Expression is MemberAccessExpressionSyntax memberAccessExpression)
             {
-                
                 var name = memberAccessExpression.Name.Identifier.ToString();
                 if (name == "Process")
                 {
                     var inputName = memberAccessExpression.Expression.ToString();
+                    if (localDeclarationStatement.Declaration.Variables.Count != 1)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            new DiagnosticDescriptor("GA00X", "Invalid statement", "Process should have a variable on the left side.", "GrainAuger",
+                                DiagnosticSeverity.Error, true),
+                            localDeclarationStatement.GetLocation()));
+                        hasErrors = true;
+                        continue;
+                    }
                     var outputName = localDeclarationStatement.Declaration.Variables.First().Identifier.ToString();
-            
+                    
                     grainCodes.Add($"{inputName} -[{string.Join(", ", genericTypes)}]-> {outputName}");
-                    
-                    var arguments = invocation.ArgumentList.Arguments;
-                    
-                    var streamNamespace = arguments[0].Expression.ToString();
 
                     var constructors = GetPublicConstructors(genericTypes.Last(), semanticModel);
                     if (constructors.Count() != 1)
@@ -177,7 +189,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                         dag[inputName],
                         genericTypes,
                         output,
-                        streamNamespace));
+                        $"\"{outputName}\""));
                 }
                 else if (name == "FromStream")
                 {
@@ -202,7 +214,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                     context.ReportDiagnostic(Diagnostic.Create(
                         new DiagnosticDescriptor("GA002", "Invalid statement", "Expected to find Process or FromStream method", "GrainAuger",
                             DiagnosticSeverity.Error, true),
-                        statement.GetLocation()));
+                        localDeclarationStatement.GetLocation()));
                     hasErrors = true;
                 }
             }
@@ -211,7 +223,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                 context.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor("GA002", "Invalid statement", "Expected to find Process or FromStream method", "GrainAuger",
                         DiagnosticSeverity.Error, true),
-                    statement.GetLocation()));
+                    localDeclarationStatement.GetLocation()));
                 hasErrors = true;
             }
         }

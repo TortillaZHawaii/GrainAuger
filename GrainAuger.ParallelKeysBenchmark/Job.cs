@@ -54,6 +54,6 @@ public class Job
     public void Configure(IAugerJobBuilder builder)
     {
         var input = builder.FromStream<string, int>("Provider", "Stream");
-        var intsStream = input.Process<RomanToIntegerTransform>("RomanToIntegerTransform");
+        var intsStream = input.Process<RomanToIntegerTransform>();
     }
 }

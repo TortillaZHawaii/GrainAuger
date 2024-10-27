@@ -10,12 +10,12 @@ public class FraudDetectionJob
     public static void Configure(IAugerJobBuilder builder)
     {
         var inputStream = builder.FromStream<CardTransaction, string>("Kafka", "GrainAuger_KafkaInput");
+
+        IAugerStream overLimitStream = inputStream.Process<OverLimitDetector>();
+        var expiredCardStream = inputStream.Process<ExpiredCardDetector>();
+        var normalDistributionStream = inputStream.Process<NormalDistributionDetector>();
+        var smallThenLargeStream = inputStream.Process<SmallThenLargeDetector>();
         
-        IAugerStream overLimitStream = inputStream.Process<OverLimitDetector>("overLimitStream");
-        var expiredCardStream = inputStream.Process<ExpiredCardDetector>("expiredCardStream");
-        var normalDistributionStream = inputStream.Process<NormalDistributionDetector>("normalDistributionStream");
-        var smallThenLargeStream = inputStream.Process<SmallThenLargeDetector>("smallThenLargeStream");
-        
-        var chainedSum = inputStream.Process<MoneyFromTransactionGetter, MoneyFromTransactionsAggregator>("chainedSum");
+        var chainedSum = inputStream.Process<MoneyFromTransactionGetter, MoneyFromTransactionsAggregator>();
     }
 }
