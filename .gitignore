@@ -3,6 +3,9 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+# .auger.g.cs
+**/*.auger.g.cs
+
 # dotenv files
 .env
 

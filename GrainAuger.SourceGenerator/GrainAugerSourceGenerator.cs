@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using GrainAuger.Abstractions;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 
@@ -248,9 +250,20 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         {{string.Join("\n\n", processGrainCodes)}}
         """;
 
+        // Normally this should be enough to generate the source code
+        // But we need to make sure that the Orleans code generator is run
+        // WITH the generated source code
         string hintNamePrefix = $"{namespaceName}.{jobName}";
         string hintName = $"{hintNamePrefix}.auger.g.cs";
-        context.AddSource(hintName, SourceText.From(code, Encoding.UTF8));
+        // context.AddSource(hintName, SourceText.From(code, Encoding.UTF8));
+        
+        // We can't save the file to disk
+        // IO operations are not allowed in the source generator
+        // RS1035: The symbol 'File' is banned for use by analyzers: Do not do file IO in analyzers
+        var path = methodDeclaration.SyntaxTree.FilePath;
+#pragma warning disable RS1035
+        File.WriteAllText("_" + path + ".auger.g.cs", code);
+#pragma warning restore RS1035
         
         return SyntaxFactory.ParseSyntaxTree(code);
     }
