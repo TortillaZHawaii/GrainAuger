@@ -262,7 +262,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         // RS1035: The symbol 'File' is banned for use by analyzers: Do not do file IO in analyzers
         var path = methodDeclaration.SyntaxTree.FilePath;
 #pragma warning disable RS1035
-        File.WriteAllText("_" + path + ".auger.g.cs", code);
+        File.WriteAllText(path + ".auger.g.cs", code);
 #pragma warning restore RS1035
         
         return SyntaxFactory.ParseSyntaxTree(code);
