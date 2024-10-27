@@ -11,7 +11,7 @@ namespace GrainAuger.SourceGenerator;
 /// See this issue for more information:
 /// https://github.com/dotnet/roslyn/issues/57239#issuecomment-1661052045 
 /// </summary>
-public class GeneratorRunner
+public static class GeneratorRunner
 {
     public static void Run(
         SourceProductionContext context, 
