@@ -5,12 +5,16 @@ namespace GrainAuger.LoadBalancers.Test;
 
 public class StreamProviderMock : IStreamProvider
 {
-    public List<object> RecordedItems { get; } = new();
+    public Dictionary<StreamId, object> RecordedStreams { get; } = new();
     
     public IAsyncStream<T> GetStream<T>(StreamId streamId)
     {
+        if (RecordedStreams.TryGetValue(streamId, out var item))
+        {
+            return (IAsyncStream<T>)item;
+        }
         var stream = new AsyncStreamMock<T>(streamId);
-        RecordedItems.Add(stream);
+        RecordedStreams[streamId] = stream;
         return stream;
     }
 

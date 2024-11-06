@@ -27,7 +27,7 @@ public class RoundRobinLoadBalancerTests
         }
         loadBalancer.OnNextAsync(items).Wait();
         
-        int totalItems = _streamProviderMock.RecordedItems.Sum(x => ((AsyncStreamMock<int>)x).RecordedItems.Count);
+        int totalItems = _streamProviderMock.RecordedStreams.Values.Sum(x => ((AsyncStreamMock<int>)x).RecordedItems.Count);
         Assert.That(totalItems, Is.EqualTo(itemCount));
     }
     
@@ -46,8 +46,8 @@ public class RoundRobinLoadBalancerTests
             items.Add(seq);
         }
         loadBalancer.OnNextAsync(items).Wait();
-        
-        var recordedItems = _streamProviderMock.RecordedItems.Cast<AsyncStreamMock<int>>().ToList();
+
+        var recordedItems = _streamProviderMock.RecordedStreams.Values.Cast<AsyncStreamMock<int>>().ToList();
         var itemCounts = recordedItems.Select(x => x.RecordedItems.Count).ToList();
         var min = itemCounts.Min();
         var max = itemCounts.Max();

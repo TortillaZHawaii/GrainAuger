@@ -27,7 +27,7 @@ public class RandomLoadBalancerTests
         }
         loadBalancer.OnNextAsync(items).Wait();
         
-        int totalItems = _streamProviderMock.RecordedItems.Sum(x => ((AsyncStreamMock<int>)x).RecordedItems.Count);
+        int totalItems = _streamProviderMock.RecordedStreams.Values.Sum(x => ((AsyncStreamMock<int>)x).RecordedItems.Count);
         Assert.That(totalItems, Is.EqualTo(itemCount));
     }
 }
