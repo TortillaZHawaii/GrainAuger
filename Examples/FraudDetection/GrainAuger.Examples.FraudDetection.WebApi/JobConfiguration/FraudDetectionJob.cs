@@ -11,7 +11,10 @@ public class FraudDetectionJob
     {
         var inputStream = builder.FromStream<CardTransaction, string>("Kafka", "GrainAuger_KafkaInput");
 
-        IAugerStream overLimitStream = inputStream.Process<OverLimitDetector>();
+        IAugerStream overLimitStream = inputStream
+            // .WithSessionWindow(TimeSpan.FromMinutes(1))
+            .Process<OverLimitDetector>();
+            // .WithRandomLoadBalancer(123);
         var expiredCardStream = inputStream.Process<ExpiredCardDetector>();
         var normalDistributionStream = inputStream.Process<NormalDistributionDetector>();
         var smallThenLargeStream = inputStream.Process<SmallThenLargeDetector>();

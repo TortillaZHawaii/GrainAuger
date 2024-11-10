@@ -31,5 +31,8 @@ namespace GrainAuger.Abstractions
         
         // Postfixes previous stream with Random load balancing mechanism
         IAugerStream WithRandomLoadBalancer(int bucketCount);
+        
+        // Postfixes previous stream with KeyBy balancing mechanism
+        IAugerStream KeyBy<T, TKey>(Func<T, TKey> keySelector);
     }
 }

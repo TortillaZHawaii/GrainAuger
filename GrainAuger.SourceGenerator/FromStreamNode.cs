@@ -1,6 +1,4 @@
-
 using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace GrainAuger.SourceGenerator;
@@ -31,8 +29,8 @@ internal record ProcessNode(
     PreviousNode.KeyType
 );
 
-internal record Processor(
-    ITypeSymbol ProcessorType,
-    ITypeSymbol InputType,
-    ITypeSymbol OutputType
-    );
+
+
+
+
+
