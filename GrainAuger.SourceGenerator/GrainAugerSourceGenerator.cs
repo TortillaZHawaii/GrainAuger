@@ -74,7 +74,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             }
         }
 
-        RunOrleansSourceGeneration(context, compilation, "", syntaxTrees.ToArray());
+        // RunOrleansSourceGeneration(context, compilation, "", syntaxTrees.ToArray());
     }
 
     private SyntaxTree? GenerateJob(SourceProductionContext context, Compilation compilation,
@@ -111,6 +111,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             // I want to display the following code:
             // inputStream -[OverLimitDetector, OverLimitDetector]-> overLimitStream
             // so I want to get the generic types of the Process method as well as names of the variables
+            // TODO: traverse the tree ourselves
             var invocations = statement.DescendantNodes().OfType<InvocationExpressionSyntax>().ToList();
             if (invocations.Count == 0)
             {
@@ -227,10 +228,28 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                     continue;
                 }
 
+                var (windowCfg, windowErr) = GetWindowConfig(invocations);
+                if (windowErr is not null)
+                {
+                    context.ReportDiagnostic(windowErr);
+                    hasErrors = true;
+                    continue;
+                }
+                
+                var (lbCfg, lbErr) = GetLoadBalancerConfig(invocations);
+                if (lbErr is not null)
+                {
+                    context.ReportDiagnostic(lbErr);
+                    hasErrors = true;
+                    continue;
+                }
+
                 dag.Add(outputName, new ProcessNode(
                     dag[inputName],
                     genericTypes,
                     output,
+                    windowCfg,
+                    lbCfg,
                     $"\"{outputName}\""));
             }
             else
@@ -284,7 +303,23 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         
         return SyntaxFactory.ParseSyntaxTree(code);
     }
-    
+
+    private (WindowConfig? windowCfg, Diagnostic? windowErr) GetWindowConfig(List<InvocationExpressionSyntax> invocations)
+    {
+        if (invocations.Count == 0)
+        {
+            return (null, null);
+        }
+        
+        return (null, null);
+    }
+
+    private (LoadBalancerConfig? lbConfig, Diagnostic? lbErr) GetLoadBalancerConfig(
+        List<InvocationExpressionSyntax> invocations)
+    {
+        return (null, null);
+    }
+
     private void RunOrleansSourceGeneration(SourceProductionContext context, Compilation compilation, string hintName,
         params SyntaxTree[] syntaxTrees)
     {
@@ -332,6 +367,16 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         bool requiresAugerContext = false;
         
         var lastObserver = "_outputStream";
+
+        // if (node.WindowConfig is not null)
+        // {
+        //     var windowConfig = node.WindowConfig!;
+        //     if (windowConfig.TumblingWindowConfig is not null)
+        //     {
+        //         var windowSize = "global::TimeSpan.FromSeconds(10)";
+        //         
+        //     }
+        // }
         
         foreach (var augerType in node.AugerTypes.Reverse())
         {

@@ -23,13 +23,13 @@
       <ProjectReference Include="..\..\GrainAuger.SourceGenerator\GrainAuger.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
     </ItemGroup>
     
-    <Target 
-        Name="DisableOrleansAnalyzer"
-        BeforeTargets="CoreCompile">
-        <ItemGroup>
-<!--                <Analyzer -->
-<!--                        Remove="@(Analyzer)"-->
-<!--                        Condition="'%(Filename)' == 'Orleans.CodeGenerator'" />-->
-        </ItemGroup>
-    </Target>
+<!--    <Target -->
+<!--        Name="DisableOrleansAnalyzer"-->
+<!--        BeforeTargets="CoreCompile">-->
+<!--        <ItemGroup>-->
+<!--&lt;!&ndash;                <Analyzer &ndash;&gt;-->
+<!--&lt;!&ndash;                        Remove="@(Analyzer)"&ndash;&gt;-->
+<!--&lt;!&ndash;                        Condition="'%(Filename)' == 'Orleans.CodeGenerator'" />&ndash;&gt;-->
+<!--        </ItemGroup>-->
+<!--    </Target>-->
 </Project>
