@@ -5,15 +5,13 @@ using Orleans.Streams;
 namespace GrainAuger.Windows;
 
 public class SlidingWindowAuger<T>(
+    TimeSpan windowSize,
+    TimeSpan windowSlide,
     IAsyncObserver<List<T>> output,
-    // this should be configurable
     IPersistentState<List<SlidingWindow<T>>> currentWindowsState,
     IAugerContext context
 ) : IAsyncObserver<T>
 {
-    private readonly TimeSpan _windowSize = TimeSpan.FromMinutes(1);
-    private readonly TimeSpan _windowSlide = TimeSpan.FromSeconds(30);
-    
     private IDisposable? _windowStartTimer;
 
     private async Task DumpWindow(object obj)
@@ -40,8 +38,8 @@ public class SlidingWindowAuger<T>(
         window.EndTimer = context.RegisterTimer(
             DumpWindow, 
             (object)window,
-            _windowSize + _windowSlide, 
-            _windowSize + _windowSlide);
+            windowSize + windowSlide, 
+            windowSize + windowSlide);
         currentWindowsState.State.Add(window);
         return Task.CompletedTask;
     }
@@ -51,8 +49,8 @@ public class SlidingWindowAuger<T>(
         _windowStartTimer ??= context.RegisterTimer(
             StartNewWindow,
             new object(),
-            _windowSize,
-            _windowSize);
+            windowSize,
+            windowSize);
         
         // add item to all windows
         foreach (var window in currentWindowsState.State)

@@ -10,7 +10,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.2" />
         <PackageReference Include="Microsoft.Orleans.Server" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Orleans.Streaming" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Orleans.Streaming" Version="8.1.0" />
         <PackageReference Include="OrleansDashboard" Version="8.0.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     </ItemGroup>
@@ -24,7 +24,9 @@
     <ItemGroup>
       <ProjectReference Include="..\..\..\GrainAuger.Abstractions\GrainAuger.Abstractions.csproj" />
       <ProjectReference Include="..\..\..\GrainAuger.Core\GrainAuger.Core.csproj" />
+      <ProjectReference Include="..\..\..\GrainAuger.LoadBalancers\GrainAuger.LoadBalancers.csproj" />
       <ProjectReference Include="..\..\..\GrainAuger.SourceGenerator\GrainAuger.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
+      <ProjectReference Include="..\..\..\GrainAuger.Windows\GrainAuger.Windows.csproj" />
     </ItemGroup>
 
 </Project>

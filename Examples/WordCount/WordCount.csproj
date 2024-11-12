@@ -19,6 +19,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\GrainAuger.LoadBalancers\GrainAuger.LoadBalancers.csproj" />
+      <ProjectReference Include="..\..\GrainAuger.Windows\GrainAuger.Windows.csproj" />
       <ProjectReference Include="..\..\GrainAuger\GrainAuger.csproj" />
       <ProjectReference Include="..\..\GrainAuger.SourceGenerator\GrainAuger.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
     </ItemGroup>

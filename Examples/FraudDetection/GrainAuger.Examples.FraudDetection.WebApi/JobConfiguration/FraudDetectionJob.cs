@@ -1,6 +1,7 @@
 using GrainAuger.Abstractions;
 using GrainAuger.Examples.FraudDetection.WebApi.Detectors;
 using GrainAuger.Examples.FraudDetection.WebApi.Dtos;
+using GrainAuger.LoadBalancers;
 
 namespace GrainAuger.Examples.FraudDetection.WebApi.JobConfiguration;
 

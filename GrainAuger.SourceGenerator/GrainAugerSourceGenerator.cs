@@ -111,28 +111,29 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             // I want to display the following code:
             // inputStream -[OverLimitDetector, OverLimitDetector]-> overLimitStream
             // so I want to get the generic types of the Process method as well as names of the variables
-            // TODO: traverse the tree ourselves
-            var invocations = statement.DescendantNodes().OfType<InvocationExpressionSyntax>().ToList();
-            if (invocations.Count == 0)
+            var invocation = statement.DescendantNodes().OfType<InvocationExpressionSyntax>().FirstOrDefault();
+            if (invocation is null)
             {
                 context.ReportDiagnostic(Diagnostic.Create(
-                    new DiagnosticDescriptor("GA002", "Invalid statement", "Expected to find Process or FromStream method", "GrainAuger",
+                    new DiagnosticDescriptor("GA00XD", "Invalid statement", "Expected to find Process or FromStream method", "GrainAuger",
                         DiagnosticSeverity.Error, true),
                     statement.GetLocation()));
                 hasErrors = true;
                 continue;
             }
-
-            var methodNames = new HashSet<string>();
-            foreach (var invocation in invocations)
+            
+            var memberAccess = invocation.Expression as MemberAccessExpressionSyntax;
+            if (memberAccess is null)
             {
-                if (invocation.Expression is MemberAccessExpressionSyntax memberAccess)
-                {
-                    var name = memberAccess.Name.Identifier.ToString();
-                    methodNames.Add(name);
-                }
+                context.ReportDiagnostic(Diagnostic.Create(
+                    new DiagnosticDescriptor("GA00XY", "Invalid statement", "Expected to find Process or FromStream method", "GrainAuger",
+                        DiagnosticSeverity.Error, true),
+                    statement.GetLocation()));
+                hasErrors = true;
+                continue;
             }
             
+            var methodName = memberAccess.Name.Identifier.ToString();
             
             if (statement is not LocalDeclarationStatementSyntax localDeclarationStatement)
             {
@@ -144,122 +145,97 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                 continue;
             }
 
-            if (methodNames.Contains("FromStream"))
+            switch (methodName)
             {
-                if (methodNames.Count != 1)
+                case "FromStream":
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        new DiagnosticDescriptor("GA00Y", "Invalid statement", "Expected to find Process or FromStream method", "GrainAuger",
-                            DiagnosticSeverity.Error, true),
-                        statement.GetLocation()));
-                    hasErrors = true;
-                    continue;
+                    var genericTypes = GetGenericTypes(invocation, semanticModel);
+                
+                    var outputName = localDeclarationStatement.Declaration.Variables.First().Identifier.ToString();
+                    grainCodes.Add($"Foreign Source <{genericTypes.First()}> -> {outputName}");
+
+                    // get arguments of the FromStream method
+                    var arguments = invocation.ArgumentList.Arguments;
+
+                    var streamProvider = arguments[0].Expression.ToString();
+                    var streamNamespace = arguments[1].Expression.ToString();
+
+                    dag.Add(outputName, new FromStreamNode(
+                        streamNamespace,
+                        streamProvider,
+                        genericTypes.First(),
+                        genericTypes.Last()
+                    ));
+                    break;
                 }
-                
-                var invocation = invocations.First();
-                var genericTypes = GetGenericTypes(invocation, semanticModel);
-                
-                var outputName = localDeclarationStatement.Declaration.Variables.First().Identifier.ToString();
-                grainCodes.Add($"Foreign Source <{genericTypes.First()}> -> {outputName}");
-
-                // get arguments of the FromStream method
-                var arguments = invocation.ArgumentList.Arguments;
-
-                var streamProvider = arguments[0].Expression.ToString();
-                var streamNamespace = arguments[1].Expression.ToString();
-
-                dag.Add(outputName, new FromStreamNode(
-                    streamNamespace,
-                    streamProvider,
-                    genericTypes.First(),
-                    genericTypes.Last()
-                ));
-            }
-            else if (methodNames.Contains("Process"))
-            {
-                var memberAccess = invocations[0].Expression as MemberAccessExpressionSyntax;
-                var inputName = memberAccess!.Expression.ToString();
-                if (localDeclarationStatement.Declaration.Variables.Count != 1)
+                case "Process":
                 {
+                    var inputName = memberAccess!.Expression.ToString();
+                    if (localDeclarationStatement.Declaration.Variables.Count != 1)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            new DiagnosticDescriptor("GA00X", "Invalid statement",
+                                "Process should have a variable on the left side.", "GrainAuger",
+                                DiagnosticSeverity.Error, true),
+                            localDeclarationStatement.GetLocation()));
+                        hasErrors = true;
+                        continue;
+                    }
+
+                    var outputName = localDeclarationStatement.Declaration.Variables.First().Identifier.ToString();
+
+                    var genericTypes = GetGenericTypes(invocation, semanticModel);
+                    grainCodes.Add($"{inputName} -[{string.Join(", ", genericTypes)}]-> {outputName}");
+
+                    var constructors = GetPublicConstructors(genericTypes.Last());
+                    if (constructors.Count() != 1)
+                    {
+                        // put a warning in the analyzer
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            new DiagnosticDescriptor("GA003", "Invalid constructors",
+                                "Auger should have exactly one public constructor", "GrainAuger",
+                                DiagnosticSeverity.Error, true),
+                            genericTypes.Last().OriginalDefinition.Locations.First()));
+                        hasErrors = true;
+                        continue;
+                    }
+
+                    var output = constructors.First().Parameters
+                        .Where(p => p.Type.OriginalDefinition.ToDisplayString() == "Orleans.Streams.IAsyncObserver<T>")
+                        .Select(p => p.Type as INamedTypeSymbol)
+                        .Select(p => p!.TypeArguments.First())
+                        .FirstOrDefault();
+
+                    var lbOutput = genericTypes.Last().BaseType?.TypeArguments.FirstOrDefault();
+
+                    if (output is null && lbOutput is null)
+                    {
+                        // put a warning in the analyzer
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            new DiagnosticDescriptor("GA004", "Invalid output",
+                                "Auger should have exactly one public constructor with IAsyncObserver<T> parameter or be directly derived from one of the load balancers",
+                                "GrainAuger",
+                                DiagnosticSeverity.Error, true),
+                            genericTypes.Last().OriginalDefinition.Locations.First()));
+                        hasErrors = true;
+                        continue;
+                    }
+
+                    dag.Add(outputName, new ProcessNode(
+                        dag[inputName],
+                        genericTypes,
+                        output ?? lbOutput!,
+                        $"\"{outputName}\""));
+                    break;
+                }
+                default:
                     context.ReportDiagnostic(Diagnostic.Create(
-                        new DiagnosticDescriptor("GA00X", "Invalid statement",
-                            "Process should have a variable on the left side.", "GrainAuger",
+                        new DiagnosticDescriptor("GA002", "Invalid statement",
+                            $"Expected to find Process or FromStream method, found {methodName}", "GrainAuger",
                             DiagnosticSeverity.Error, true),
                         localDeclarationStatement.GetLocation()));
                     hasErrors = true;
-                    continue;
-                }
-
-                var outputName = localDeclarationStatement.Declaration.Variables.First().Identifier.ToString();
-
-                var processInvocation = invocations.First();
-                var genericTypes = GetGenericTypes(processInvocation, semanticModel);
-                grainCodes.Add($"{inputName} -[{string.Join(", ", genericTypes)}]-> {outputName}");
-
-                var constructors = GetPublicConstructors(genericTypes.Last());
-                if (constructors.Count() != 1)
-                {
-                    // put a warning in the analyzer
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        new DiagnosticDescriptor("GA003", "Invalid constructors",
-                            "Auger should have exactly one public constructor", "GrainAuger",
-                            DiagnosticSeverity.Error, true),
-                        genericTypes.Last().OriginalDefinition.Locations.First()));
-                    hasErrors = true;
-                    continue;
-                }
-
-                var output = constructors.First().Parameters
-                    .Where(p => p.Type.OriginalDefinition.ToDisplayString() == "Orleans.Streams.IAsyncObserver<T>")
-                    .Select(p => p.Type as INamedTypeSymbol)
-                    .Select(p => p!.TypeArguments.First())
-                    .FirstOrDefault();
-
-                if (output is null)
-                {
-                    // put a warning in the analyzer
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        new DiagnosticDescriptor("GA004", "Invalid output",
-                            "Auger should have exactly one public constructor with IAsyncObserver<T> parameter",
-                            "GrainAuger",
-                            DiagnosticSeverity.Error, true),
-                        genericTypes.Last().OriginalDefinition.Locations.First()));
-                    hasErrors = true;
-                    continue;
-                }
-
-                var (windowCfg, windowErr) = GetWindowConfig(invocations);
-                if (windowErr is not null)
-                {
-                    context.ReportDiagnostic(windowErr);
-                    hasErrors = true;
-                    continue;
-                }
-                
-                var (lbCfg, lbErr) = GetLoadBalancerConfig(invocations);
-                if (lbErr is not null)
-                {
-                    context.ReportDiagnostic(lbErr);
-                    hasErrors = true;
-                    continue;
-                }
-
-                dag.Add(outputName, new ProcessNode(
-                    dag[inputName],
-                    genericTypes,
-                    output,
-                    windowCfg,
-                    lbCfg,
-                    $"\"{outputName}\""));
-            }
-            else
-            {
-                context.ReportDiagnostic(Diagnostic.Create(
-                    new DiagnosticDescriptor("GA002", "Invalid statement",
-                        "Expected to find Process or FromStream method", "GrainAuger",
-                        DiagnosticSeverity.Error, true),
-                    localDeclarationStatement.GetLocation()));
-                hasErrors = true;
+                    break;
             }
         }
         
@@ -302,22 +278,6 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
 #pragma warning restore RS1035
         
         return SyntaxFactory.ParseSyntaxTree(code);
-    }
-
-    private (WindowConfig? windowCfg, Diagnostic? windowErr) GetWindowConfig(List<InvocationExpressionSyntax> invocations)
-    {
-        if (invocations.Count == 0)
-        {
-            return (null, null);
-        }
-        
-        return (null, null);
-    }
-
-    private (LoadBalancerConfig? lbConfig, Diagnostic? lbErr) GetLoadBalancerConfig(
-        List<InvocationExpressionSyntax> invocations)
-    {
-        return (null, null);
     }
 
     private void RunOrleansSourceGeneration(SourceProductionContext context, Compilation compilation, string hintName,
@@ -367,16 +327,6 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         bool requiresAugerContext = false;
         
         var lastObserver = "_outputStream";
-
-        // if (node.WindowConfig is not null)
-        // {
-        //     var windowConfig = node.WindowConfig!;
-        //     if (windowConfig.TumblingWindowConfig is not null)
-        //     {
-        //         var windowSize = "global::TimeSpan.FromSeconds(10)";
-        //         
-        //     }
-        // }
         
         foreach (var augerType in node.AugerTypes.Reverse())
         {
@@ -392,41 +342,69 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             var paramStrings = new List<string>();
             
             firstProcessorName = processorVariableName;
-            
-            foreach (var parameter in parameters)
+
+            var baseName = augerType.BaseType?.OriginalDefinition.ToDisplayString();
+            if (baseName is not null && GetLoadBalancerTypes().Contains(baseName))
             {
-                var attributesString = parameter
-                    .GetAttributes()
-                    .Select(x => $"global::{x}")
-                    .ToList();
-                var paramKey = GetGlobalTypeName(parameter.Type);
-                if (attributesString.Any())
-                {
-                    paramKey = $"[{string.Join(", ", attributesString)}] {paramKey}";
-                }
+                outputType = GetGlobalTypeName(augerType.BaseType!.TypeArguments.First());
                 
-                if (parameter.Type.OriginalDefinition.ToDisplayString() == "Orleans.Streams.IAsyncObserver<T>")
+                foreach (var parameter in parameters)
                 {
-                    var outputTypeSymbol = parameter.Type as INamedTypeSymbol;
-                    outputType = GetGlobalTypeName(outputTypeSymbol!.TypeArguments.First());
-                    paramStrings.Add(lastObserver);
-                }
-                else if (parameter.Type.OriginalDefinition.ToDisplayString() == "GrainAuger.Abstractions.IAugerContext")
-                {
-                    requiresAugerContext = true;
-                    paramStrings.Add(augerContextVariableName);
-                }
-                else
-                {
-                    if (insertedVariables.TryGetValue(paramKey, out var variableName))
+                    // output namespace, make equal to the output variable name
+                    if (parameter.Type.OriginalDefinition.ToDisplayString() == "System.String")
                     {
-                        paramStrings.Add(variableName);
+                        // node stream namespace
+                        paramStrings.Add(node.StreamNamespace);
+                    }
+                    // IStreamProvider
+                    else if (parameter.Type.OriginalDefinition.ToDisplayString() == "Orleans.Streams.IStreamProvider")
+                    {
+                        paramStrings.Add("outputStreamProvider");
                     }
                     else
                     {
-                        variableName = $"v{variableCounter++}";
-                        insertedVariables.Add(paramKey, variableName);
-                        paramStrings.Add(variableName);
+                        // ERROR
+                    }
+                }
+            }
+            else
+            {
+                foreach (var parameter in parameters)
+                {
+                    var attributesString = parameter
+                        .GetAttributes()
+                        .Select(x => $"global::{x}")
+                        .ToList();
+                    var paramKey = GetGlobalTypeName(parameter.Type);
+                    if (attributesString.Any())
+                    {
+                        paramKey = $"[{string.Join(", ", attributesString)}] {paramKey}";
+                    }
+
+                    if (parameter.Type.OriginalDefinition.ToDisplayString() == "Orleans.Streams.IAsyncObserver<T>")
+                    {
+                        var outputTypeSymbol = parameter.Type as INamedTypeSymbol;
+                        outputType = GetGlobalTypeName(outputTypeSymbol!.TypeArguments.First());
+                        paramStrings.Add(lastObserver);
+                    }
+                    else if (parameter.Type.OriginalDefinition.ToDisplayString() ==
+                             "GrainAuger.Abstractions.IAugerContext")
+                    {
+                        requiresAugerContext = true;
+                        paramStrings.Add(augerContextVariableName);
+                    }
+                    else
+                    {
+                        if (insertedVariables.TryGetValue(paramKey, out var variableName))
+                        {
+                            paramStrings.Add(variableName);
+                        }
+                        else
+                        {
+                            variableName = $"v{variableCounter++}";
+                            insertedVariables.Add(paramKey, variableName);
+                            paramStrings.Add(variableName);
+                        }
                     }
                 }
             }
@@ -558,5 +536,15 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
             genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters
             ));
+    }
+
+    private static List<string> GetLoadBalancerTypes()
+    {
+        return
+        [
+            "GrainAuger.LoadBalancers.RoundRobinLoadBalancer<T>",
+            "GrainAuger.LoadBalancers.RandomLoadBalancer<T>",
+            "GrainAuger.LoadBalancers.KeyByBalancer<T, TKey>"
+        ];
     }
 }

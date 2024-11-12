@@ -21,8 +21,6 @@ internal record ProcessNode(
     DagNode PreviousNode,
     ImmutableArray<ITypeSymbol> AugerTypes,
     ITypeSymbol OutputType,
-    WindowConfig? WindowConfig,
-    LoadBalancerConfig? LoadBalancerConfig,
     string StreamNamespace
 ) : DagNode(
     StreamNamespace,

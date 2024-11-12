@@ -13,9 +13,6 @@ abstract class WordCountJobConfigurationWithStopper
         var enabledStream = inputStream.Process<JobStopperAuger>();
         
         // Rest of the job configuration
-        var countStream = enabledStream
-            .Process<WordCounter>()
-            .WithSlidingWindow(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
-            .WithRandomLoadBalancer(123);
+        var countStream = enabledStream.Process<WordCounter>();
     }
 }

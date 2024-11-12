@@ -1,10 +1,9 @@
 ﻿using Orleans.Runtime;
-using Orleans.Serialization;
 using Orleans.Streams;
 
 namespace GrainAuger.LoadBalancers;
 
-public class RoundRobinLoadBalancer<T> : IAsyncBatchObserver<T>
+public class RoundRobinLoadBalancer<T> : IAsyncObserver<T>
 {
     private readonly IStreamProvider _streamProvider;
 
@@ -23,8 +22,19 @@ public class RoundRobinLoadBalancer<T> : IAsyncBatchObserver<T>
         {
             _buckets.Add(StreamId.Create(outputNamespace, i));
         }
-    }   
+    }
 
+    public async Task OnNextAsync(T item, StreamSequenceToken? token = null)
+    {
+        var bucket = _buckets[_currentBucket];
+        var stream = _streamProvider.GetStream<T>(bucket);
+        await stream.OnNextAsync(item);
+        ++_currentBucket;
+        if (_currentBucket >= _numBuckets)
+        {
+            _currentBucket = 0;
+        }
+    }
 
     public Task OnCompletedAsync()
     {
@@ -34,20 +44,5 @@ public class RoundRobinLoadBalancer<T> : IAsyncBatchObserver<T>
     public Task OnErrorAsync(Exception ex)
     {
         return Task.CompletedTask;
-    }
-
-    public async Task OnNextAsync(IList<SequentialItem<T>> items)
-    {
-        foreach (var item in items)
-        {
-            var bucket = _buckets[_currentBucket];
-            var stream = _streamProvider.GetStream<T>(bucket);
-            await stream.OnNextAsync(item.Item);
-            ++_currentBucket;
-            if (_currentBucket >= _numBuckets)
-            {
-                _currentBucket = 0;
-            }
-        }
     }
 }
