@@ -7,25 +7,25 @@ internal abstract record DagNode(
     string StreamNamespace,
     string StreamProvider,
     ITypeSymbol OutputType,
-    ITypeSymbol KeyType
+    ITypeSymbol OutputKeyType
 );
 
 internal record FromStreamNode(
     string StreamNamespace,
     string StreamProvider,
     ITypeSymbol OutputType,
-    ITypeSymbol KeyType
-) : DagNode(StreamNamespace, StreamProvider, OutputType, KeyType);
+    ITypeSymbol OutputKeyType
+) : DagNode(StreamNamespace, StreamProvider, OutputType, OutputKeyType);
 
 internal record ProcessNode(
     DagNode PreviousNode,
     ImmutableArray<ITypeSymbol> AugerTypes,
     ITypeSymbol OutputType,
-    ITypeSymbol KeyType,
+    ITypeSymbol OutputKeyType,
     string StreamNamespace
 ) : DagNode(
     StreamNamespace,
     PreviousNode.StreamProvider,
     OutputType,
-    KeyType
+    OutputKeyType
 );

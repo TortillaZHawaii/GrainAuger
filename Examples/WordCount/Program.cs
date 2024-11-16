@@ -1,9 +1,12 @@
 using Orleans.Runtime;
+using WordCount;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddSingleton<IFeatureFlagService, FeatureFlagService>();
 
 builder.Host.UseOrleans(siloBuilder =>
 {

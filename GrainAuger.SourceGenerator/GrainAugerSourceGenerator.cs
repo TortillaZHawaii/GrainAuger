@@ -206,22 +206,19 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                         .Select(p => p!.TypeArguments.First())
                         .FirstOrDefault();
 
+                    // Get key type based on the output of the previous node
                     ITypeSymbol? lbOutput = null;
-                    ITypeSymbol keyType = dag[inputName].KeyType;
-                    if (IsLoadBalancerType(genericTypes.Last()))
+                    ITypeSymbol keyType = dag[inputName].OutputKeyType;
+                    
+                    var last = genericTypes.Last();
+                    if (IsLoadBalancerType(last))
                     {
-                        lbOutput = genericTypes.Last().BaseType?.TypeArguments.First();
+                        lbOutput = last.BaseType?.TypeArguments.First();
                         var keyByKeyType = GetKeyByKeyType(genericTypes.Last());
                         // Key type changes key to either String, Guid or Long
-                        if (keyByKeyType is not null)
-                        {
-                            keyType = keyByKeyType;
-                        }
                         // Otherwise LBs use long as the key
-                        else
-                        {
-                            keyType = compilation.GetTypeByMetadataName("System.Int64")!;
-                        }
+                        keyType = keyByKeyType ??
+                                  compilation.GetTypeByMetadataName("System.Int64")!;
                     }
 
                     if (output is null && lbOutput is null)
@@ -325,17 +322,18 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
     {
         var grainType = "";
         var getKeyMethod = "";
-        if (node.KeyType.OriginalDefinition.ToDisplayString() == "System.Guid")
+        var keyType = node.PreviousNode.OutputKeyType;
+        if (keyType.OriginalDefinition.ToDisplayString() == "System.Guid")
         {
             grainType = "Guid";
             getKeyMethod = "this.GetPrimaryKey()";
         }
-        else if (node.KeyType.OriginalDefinition.ToDisplayString() == "long")
+        else if (keyType.OriginalDefinition.ToDisplayString() == "long")
         {
             grainType = "Integer";
             getKeyMethod = "this.GetPrimaryKeyLong()";
         }
-        else if (node.KeyType.OriginalDefinition.ToDisplayString() == "string")
+        else if (keyType.OriginalDefinition.ToDisplayString() == "string")
         {
             grainType = "String";
             getKeyMethod = "this.GetPrimaryKeyString()";
@@ -465,10 +463,10 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             
             public override async Task OnActivateAsync(CancellationToken cancellationToken)
             {
-                if (logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
+                if (logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Debug))
                 {
-                    global::Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(logger, "Activating...");
-                }         
+                    global::Microsoft.Extensions.Logging.LoggerExtensions.LogDebug(logger, "{augerName}/{augerKey} Activating", "{{keyName}}", {{getKeyMethod}});
+                }
                        
                 await base.OnActivateAsync(cancellationToken);
                 
@@ -484,17 +482,17 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                 
                 await inputStream.SubscribeAsync(this);
                 
-                if (logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
+                if (logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Debug))
                 {
-                    global::Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(logger, "Activated");
+                    global::Microsoft.Extensions.Logging.LoggerExtensions.LogDebug(logger, "{augerName}/{augerKey} Activated", "{{keyName}}", {{getKeyMethod}});
                 }
             }
             
             public async Task OnNextAsync({{inputType}} item, global::Orleans.Streams.StreamSequenceToken? token = null)
             {
-                if (logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Information))
+                if (logger.IsEnabled(global::Microsoft.Extensions.Logging.LogLevel.Debug))
                 {
-                    global::Microsoft.Extensions.Logging.LoggerExtensions.LogInformation(logger, "Processing {item}", item);
+                    global::Microsoft.Extensions.Logging.LoggerExtensions.LogDebug(logger, "{augerName}/{augerKey} Processing {item}", "{{keyName}}", {{getKeyMethod}}, item);
                 }
                 await {{firstProcessorName}}.OnNextAsync(item, token);                
             }
