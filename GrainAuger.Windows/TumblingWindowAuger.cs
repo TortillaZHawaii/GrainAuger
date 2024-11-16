@@ -5,34 +5,35 @@ using Orleans.Streams;
 namespace GrainAuger.Windows;
 
 public class TumblingWindowAuger<T>(
+    TimeSpan windowSize,
     IAsyncObserver<List<T>> output, 
-    IPersistentState<List<T>> currentWindowState,
     IAugerContext context
     ) : IAsyncObserver<T>
 {
-    private readonly TimeSpan _windowSize = TimeSpan.FromMinutes(1);
+    private readonly List<T> _window = [];
     
     // potential memory leak if not disposed ?
     private IDisposable? _timer;
     
     private async Task DumpWindow(object _)
     {
-        if (currentWindowState.State.Count == 0)
+        if (_window.Count == 0)
         {
             // No data windows are not send further
             return;
         }
 
-        await output.OnNextAsync(currentWindowState.State);
-        await currentWindowState.ClearStateAsync();
+        await output.OnNextAsync(_window);
+        _window.Clear();
     }
     
-    public async Task OnNextAsync(T item, StreamSequenceToken? token = null)
+    public Task OnNextAsync(T item, StreamSequenceToken? token = null)
     {
-        _timer ??= context.RegisterTimer(DumpWindow, new object(), _windowSize, _windowSize);
+        _timer ??= context.RegisterTimer(DumpWindow, new object(), windowSize, windowSize);
         
-        currentWindowState.State.Add(item);
-        await currentWindowState.WriteStateAsync();
+        _window.Add(item);
+        
+        return Task.CompletedTask;
     }
 
     public Task OnCompletedAsync()
