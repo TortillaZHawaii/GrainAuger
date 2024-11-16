@@ -14,21 +14,41 @@ abstract class HighlyParallelConfiguration
         var inputStream = builder.FromStream<string, string>("MemoryStream", "WordCountInput");
 
         var windowedStream = inputStream.Process<Window1>();
-        
+        //
         var lbStream = inputStream.Process<LoadBalancer1>();
-        
-        var keyByStream = lbStream.Process<GuidKeyBy>();
+        var intStream = lbStream.Process<IntProcessor>();
+        //
+        // var keyByStream = inputStream.Process<GuidKeyBy>();
     }
 }
 
-class LoadBalancer1(IStreamProvider streamProvider, string name)
+public class LoadBalancer1(IStreamProvider streamProvider, string name)
     : RoundRobinLoadBalancer<string>(name, streamProvider, 1024);
 
-class Window1(
+public class Window1(
     IAsyncObserver<List<string>> output,
-    IPersistentState<List<SlidingWindow<string>>> currentWindowsState,
     IAugerContext context) 
-: SlidingWindowAuger<string>(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2), output, currentWindowsState, context);
+: SlidingWindowAuger<string>(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2), output, context);
 
-class GuidKeyBy(IStreamProvider streamProvider, string name)
+public class GuidKeyBy(IStreamProvider streamProvider, string name)
     : KeyByBalancer<string, Guid>(name, streamProvider, s => Guid.NewGuid());
+    
+public class IntProcessor(IAsyncObserver<string> output, ILogger<IntProcessor> logger) : IAsyncObserver<string>
+{
+    public async Task OnNextAsync(string item, StreamSequenceToken? token = null)
+    {
+        logger.LogInformation($"Processing {item}");
+        await output.OnNextAsync(item);
+    }
+
+    public Task OnCompletedAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task OnErrorAsync(Exception ex)
+    {
+        return Task.CompletedTask;
+    }
+}
+    

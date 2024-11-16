@@ -8,11 +8,11 @@ public class SlidingWindowAuger<T>(
     TimeSpan windowSize,
     TimeSpan windowSlide,
     IAsyncObserver<List<T>> output,
-    IPersistentState<List<SlidingWindow<T>>> currentWindowsState,
     IAugerContext context
 ) : IAsyncObserver<T>
 {
     private IDisposable? _windowStartTimer;
+    private readonly List<SlidingWindow<T>> _window = [];
 
     private async Task DumpWindow(object obj)
     {
@@ -28,7 +28,7 @@ public class SlidingWindowAuger<T>(
             await output.OnNextAsync(window.Window);
         }
         
-        currentWindowsState.State.Remove(window);
+        _window.Remove(window);
         window.EndTimer!.Dispose();
     }
 
@@ -40,7 +40,7 @@ public class SlidingWindowAuger<T>(
             (object)window,
             windowSize + windowSlide, 
             windowSize + windowSlide);
-        currentWindowsState.State.Add(window);
+        _window.Add(window);
         return Task.CompletedTask;
     }
 
@@ -53,9 +53,9 @@ public class SlidingWindowAuger<T>(
             windowSize);
         
         // add item to all windows
-        foreach (var window in currentWindowsState.State)
+        foreach (var window in _window)
         {
-            window.Window.Add(item);
+           window.Window.Add(item);
         }
         
         return Task.CompletedTask;
@@ -64,7 +64,7 @@ public class SlidingWindowAuger<T>(
     public async Task OnCompletedAsync()
     {
         _windowStartTimer?.Dispose();
-        await Task.WhenAll(currentWindowsState.State.Select(DumpWindow));
+        await Task.WhenAll(_window.Select(DumpWindow));
     }
 
     public async Task OnErrorAsync(Exception ex)

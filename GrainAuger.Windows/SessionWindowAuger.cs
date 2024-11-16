@@ -1,37 +1,36 @@
 using GrainAuger.Abstractions;
-using Orleans.Runtime;
 using Orleans.Streams;
 
 namespace GrainAuger.Windows;
 
 public class SessionWindowAuger<T>(
     IAsyncObserver<List<T>> output,
-    // this should be configurable
-    IPersistentState<List<T>> currentWindowState,
     IAugerContext context,
     TimeSpan sessionTimeout
 ) : IAsyncObserver<T>
 {
     private IDisposable? _timer;
+    private readonly List<T> _window = [];
     
     private async Task DumpWindow(object _)
     {
-        if (currentWindowState.State.Count != 0)
+        if (_window.Count != 0)
         {
-            await output.OnNextAsync(currentWindowState.State);
-            await currentWindowState.ClearStateAsync();
+            await output.OnNextAsync(_window);
+            _window.Clear();
         }
         
         _timer?.Dispose();
         _timer = null;
     }
     
-    public async Task OnNextAsync(T item, StreamSequenceToken? token = null)
+    public Task OnNextAsync(T item, StreamSequenceToken? token = null)
     {
         _timer ??= context.RegisterTimer(DumpWindow, new object(), sessionTimeout, sessionTimeout);
         
-        currentWindowState.State.Add(item);
-        await currentWindowState.WriteStateAsync();
+        _window.Add(item);
+        
+        return Task.CompletedTask;
     }
     
     public Task OnCompletedAsync()
