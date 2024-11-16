@@ -16,11 +16,13 @@ abstract class HighlyParallelConfiguration
         var windowedStream = inputStream.Process<Window1>();
         
         var lbStream = inputStream.Process<LoadBalancer1>();
+        
+        var keyByStream = lbStream.Process<GuidKeyBy>();
     }
 }
 
-class LoadBalancer1(IStreamProvider streamProvider)
-    : RoundRobinLoadBalancer<string>("lbStream", streamProvider, 1024);
+class LoadBalancer1(IStreamProvider streamProvider, string name)
+    : RoundRobinLoadBalancer<string>(name, streamProvider, 1024);
 
 class Window1(
     IAsyncObserver<List<string>> output,
@@ -28,3 +30,5 @@ class Window1(
     IAugerContext context) 
 : SlidingWindowAuger<string>(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2), output, currentWindowsState, context);
 
+class GuidKeyBy(IStreamProvider streamProvider, string name)
+    : KeyByBalancer<string, Guid>(name, streamProvider, s => Guid.NewGuid());

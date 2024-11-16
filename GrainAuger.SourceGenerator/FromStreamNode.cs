@@ -21,16 +21,11 @@ internal record ProcessNode(
     DagNode PreviousNode,
     ImmutableArray<ITypeSymbol> AugerTypes,
     ITypeSymbol OutputType,
+    ITypeSymbol KeyType,
     string StreamNamespace
 ) : DagNode(
     StreamNamespace,
     PreviousNode.StreamProvider,
     OutputType,
-    PreviousNode.KeyType
+    KeyType
 );
-
-
-
-
-
-

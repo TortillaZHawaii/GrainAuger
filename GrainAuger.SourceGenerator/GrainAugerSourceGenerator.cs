@@ -206,7 +206,23 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                         .Select(p => p!.TypeArguments.First())
                         .FirstOrDefault();
 
-                    var lbOutput = genericTypes.Last().BaseType?.TypeArguments.FirstOrDefault();
+                    ITypeSymbol? lbOutput = null;
+                    ITypeSymbol keyType = dag[inputName].KeyType;
+                    if (IsLoadBalancerType(genericTypes.Last()))
+                    {
+                        lbOutput = genericTypes.Last().BaseType?.TypeArguments.First();
+                        var keyByKeyType = GetKeyByKeyType(genericTypes.Last());
+                        // Key type changes key to either String, Guid or Long
+                        if (keyByKeyType is not null)
+                        {
+                            keyType = keyByKeyType;
+                        }
+                        // Otherwise LBs use long as the key
+                        else
+                        {
+                            keyType = compilation.GetTypeByMetadataName("System.Int64")!;
+                        }
+                    }
 
                     if (output is null && lbOutput is null)
                     {
@@ -225,6 +241,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                         dag[inputName],
                         genericTypes,
                         output ?? lbOutput!,
+                        keyType,
                         $"\"{outputName}\""));
                     break;
                 }
@@ -306,7 +323,27 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
 
     private static string GenerateProcessGrainCode(string keyName, ProcessNode node)
     {
-        var grainType = "String";
+        var grainType = "";
+        var getKeyMethod = "";
+        if (node.KeyType.OriginalDefinition.ToDisplayString() == "System.Guid")
+        {
+            grainType = "Guid";
+            getKeyMethod = "this.GetPrimaryKey()";
+        }
+        else if (node.KeyType.OriginalDefinition.ToDisplayString() == "long")
+        {
+            grainType = "Integer";
+            getKeyMethod = "this.GetPrimaryKeyLong()";
+        }
+        else if (node.KeyType.OriginalDefinition.ToDisplayString() == "string")
+        {
+            grainType = "String";
+            getKeyMethod = "this.GetPrimaryKeyString()";
+        }
+        else
+        {
+            // ERROR
+        }
 
         Dictionary<string, string> insertedVariables = new();
         int variableCounter = 0;
@@ -343,15 +380,14 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             
             firstProcessorName = processorVariableName;
 
-            var baseName = augerType.BaseType?.OriginalDefinition.ToDisplayString();
-            if (baseName is not null && GetLoadBalancerTypes().Contains(baseName))
+            if (IsLoadBalancerType(augerType))
             {
                 outputType = GetGlobalTypeName(augerType.BaseType!.TypeArguments.First());
                 
                 foreach (var parameter in parameters)
                 {
                     // output namespace, make equal to the output variable name
-                    if (parameter.Type.OriginalDefinition.ToDisplayString() == "System.String")
+                    if (parameter.Type.ToDisplayString() == "string")
                     {
                         // node stream namespace
                         paramStrings.Add(node.StreamNamespace);
@@ -437,11 +473,11 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                 await base.OnActivateAsync(cancellationToken);
                 
                 var inputStreamProvider = this.GetStreamProvider({{node.PreviousNode.StreamProvider}});
-                var inputStreamId = global::Orleans.Runtime.StreamId.Create({{node.PreviousNode.StreamNamespace}}, this.GetPrimaryKey{{grainType}}());
+                var inputStreamId = global::Orleans.Runtime.StreamId.Create({{node.PreviousNode.StreamNamespace}}, {{getKeyMethod}});
                 var inputStream = inputStreamProvider.GetStream<{{inputType}}>(inputStreamId);
                 
                 var outputStreamProvider = this.GetStreamProvider({{node.StreamProvider}});
-                var outputStreamId = global::Orleans.Runtime.StreamId.Create({{node.StreamNamespace}}, this.GetPrimaryKey{{grainType}}());
+                var outputStreamId = global::Orleans.Runtime.StreamId.Create({{node.StreamNamespace}}, {{getKeyMethod}});
                 _outputStream = outputStreamProvider.GetStream<{{outputType}}>(outputStreamId);
                 {{(requiresAugerContext ? $"\n\t\t{augerContextDefinition}" : "")}}
                 {{string.Join("\n\t\t", processorConstructors)}}
@@ -546,5 +582,27 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             "GrainAuger.LoadBalancers.RandomLoadBalancer<T>",
             "GrainAuger.LoadBalancers.KeyByBalancer<T, TKey>"
         ];
+    }
+    
+    private static bool IsLoadBalancerType(ITypeSymbol? symbol)
+    {
+        var baseTypeName = symbol?.BaseType?.OriginalDefinition.ToDisplayString();
+        if (baseTypeName == null)
+        {
+            return false;
+        }
+        
+        return GetLoadBalancerTypes().Contains(baseTypeName);
+    }
+    
+    private static ITypeSymbol? GetKeyByKeyType(ITypeSymbol? symbol)
+    {
+        var baseTypeName = symbol?.BaseType?.OriginalDefinition.ToDisplayString();
+        if (baseTypeName == "GrainAuger.LoadBalancers.KeyByBalancer<T, TKey>")
+        {
+            return symbol!.BaseType!.TypeArguments[1];
+        }
+        
+        return null;
     }
 }
