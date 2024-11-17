@@ -114,10 +114,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             var invocation = statement.DescendantNodes().OfType<InvocationExpressionSyntax>().FirstOrDefault();
             if (invocation is null)
             {
-                context.ReportDiagnostic(Diagnostic.Create(
-                    new DiagnosticDescriptor("GA00XD", "Invalid statement", "Expected to find Process or FromStream method", "GrainAuger",
-                        DiagnosticSeverity.Error, true),
-                    statement.GetLocation()));
+                context.ReportDiagnostic(GrainAugerDiagnostic.MissingMethod(statement.GetLocation()));
                 hasErrors = true;
                 continue;
             }
@@ -125,10 +122,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             var memberAccess = invocation.Expression as MemberAccessExpressionSyntax;
             if (memberAccess is null)
             {
-                context.ReportDiagnostic(Diagnostic.Create(
-                    new DiagnosticDescriptor("GA00XY", "Invalid statement", "Expected to find Process or FromStream method", "GrainAuger",
-                        DiagnosticSeverity.Error, true),
-                    statement.GetLocation()));
+                context.ReportDiagnostic(GrainAugerDiagnostic.MissingMethod(statement.GetLocation()));
                 hasErrors = true;
                 continue;
             }
@@ -137,13 +131,19 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             
             if (statement is not LocalDeclarationStatementSyntax localDeclarationStatement)
             {
-                context.ReportDiagnostic(Diagnostic.Create(
-                    new DiagnosticDescriptor("GA00Y", "Invalid statement", "Expected to find Process or FromStream method", "GrainAuger",
-                        DiagnosticSeverity.Error, true),
-                    statement.GetLocation()));
+                context.ReportDiagnostic(GrainAugerDiagnostic.MissingOutputVariable(statement.GetLocation()));
                 hasErrors = true;
                 continue;
             }
+
+            if (localDeclarationStatement.Declaration.Variables.Count != 1)
+            {
+                context.ReportDiagnostic(GrainAugerDiagnostic.MissingOutputVariable(localDeclarationStatement.GetLocation()));
+                hasErrors = true;
+                continue;
+            }
+            
+            var outputName = localDeclarationStatement.Declaration.Variables.First().Identifier.ToString();
 
             switch (methodName)
             {
@@ -151,7 +151,6 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                 {
                     var genericTypes = GetGenericTypes(invocation, semanticModel);
                 
-                    var outputName = localDeclarationStatement.Declaration.Variables.First().Identifier.ToString();
                     grainCodes.Add($"Foreign Source <{genericTypes.First()}> -> {outputName}");
 
                     // get arguments of the FromStream method
@@ -159,6 +158,14 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
 
                     var streamProvider = arguments[0].Expression.ToString();
                     var streamNamespace = arguments[1].Expression.ToString();
+                    
+                    var keyType = genericTypes.Last();
+                    if (!IsSupportedKeyType(keyType))
+                    {
+                        context.ReportDiagnostic(GrainAugerDiagnostic.WrongKeyType(keyType.Locations.First(), keyType.ToDisplayString()));
+                        hasErrors = true;
+                        continue;
+                    }
 
                     dag.Add(outputName, new FromStreamNode(
                         streamNamespace,
@@ -173,17 +180,13 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                     var inputName = memberAccess!.Expression.ToString();
                     if (localDeclarationStatement.Declaration.Variables.Count != 1)
                     {
-                        context.ReportDiagnostic(Diagnostic.Create(
-                            new DiagnosticDescriptor("GA00X", "Invalid statement",
-                                "Process should have a variable on the left side.", "GrainAuger",
-                                DiagnosticSeverity.Error, true),
-                            localDeclarationStatement.GetLocation()));
+                        context.ReportDiagnostic(
+                            GrainAugerDiagnostic.MissingOutputVariable(localDeclarationStatement.GetLocation())
+                        );
                         hasErrors = true;
                         continue;
                     }
-
-                    var outputName = localDeclarationStatement.Declaration.Variables.First().Identifier.ToString();
-
+                    
                     var genericTypes = GetGenericTypes(invocation, semanticModel);
                     grainCodes.Add($"{inputName} -[{string.Join(", ", genericTypes)}]-> {outputName}");
 
@@ -215,6 +218,14 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                     {
                         lbOutput = last.BaseType?.TypeArguments.First();
                         var keyByKeyType = GetKeyByKeyType(genericTypes.Last());
+                        
+                        if (keyByKeyType is not null && !IsSupportedKeyType(keyByKeyType))
+                        {
+                            context.ReportDiagnostic(GrainAugerDiagnostic.WrongKeyType(keyByKeyType.Locations.First(), keyByKeyType.ToDisplayString()));
+                            hasErrors = true;
+                            continue;
+                        }
+                        
                         // Key type changes key to either String, Guid or Long
                         // Otherwise LBs use long as the key
                         keyType = keyByKeyType ??
@@ -223,13 +234,8 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
 
                     if (output is null && lbOutput is null)
                     {
-                        // put a warning in the analyzer
-                        context.ReportDiagnostic(Diagnostic.Create(
-                            new DiagnosticDescriptor("GA004", "Invalid output",
-                                "Auger should have exactly one public constructor with IAsyncObserver<T> parameter or be directly derived from one of the load balancers",
-                                "GrainAuger",
-                                DiagnosticSeverity.Error, true),
-                            genericTypes.Last().OriginalDefinition.Locations.First()));
+                        context.ReportDiagnostic(GrainAugerDiagnostic.AugerCannotInferConstructor(genericTypes.Last()
+                            .OriginalDefinition.Locations.First()));
                         hasErrors = true;
                         continue;
                     }
@@ -243,11 +249,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                     break;
                 }
                 default:
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        new DiagnosticDescriptor("GA002", "Invalid statement",
-                            $"Expected to find Process or FromStream method, found {methodName}", "GrainAuger",
-                            DiagnosticSeverity.Error, true),
-                        localDeclarationStatement.GetLocation()));
+                    context.ReportDiagnostic(GrainAugerDiagnostic.InvalidMethod(localDeclarationStatement.GetLocation(), methodName));
                     hasErrors = true;
                     break;
             }
@@ -257,10 +259,17 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         {
             return null;
         }
-        
+
         var processGrainCodes = dag
             .Where(kvp => kvp.Value is ProcessNode)
-            .Select(kvp => GenerateProcessGrainCode(kvp.Key, (ProcessNode)kvp.Value));
+            .Select(kvp => GenerateProcessGrainCode(context, kvp.Key, (ProcessNode)kvp.Value))
+            .ToList();
+
+        if (processGrainCodes.Any(pgc => pgc == ""))
+        {
+            // Found an error in the process grain code generation
+            return null;
+        }
 
         var code = $$"""
         // <auto-generated/>
@@ -318,7 +327,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         GeneratorRunner.Run(context, compilation, hintName, generators, syntaxTrees);
     }
 
-    private static string GenerateProcessGrainCode(string keyName, ProcessNode node)
+    private static string GenerateProcessGrainCode(SourceProductionContext context, string keyName, ProcessNode node)
     {
         var grainType = "";
         var getKeyMethod = "";
@@ -340,7 +349,8 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         }
         else
         {
-            // ERROR
+            context.ReportDiagnostic(GrainAugerDiagnostic.WrongKeyType(keyType.Locations.First(), keyType.ToDisplayString()));
+            return "";
         }
 
         Dictionary<string, string> insertedVariables = new();
@@ -368,10 +378,18 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             var constructors = GetPublicConstructors(augerType);
             if (constructors.Count() != 1)
             {
-                continue;
+                context.ReportDiagnostic(GrainAugerDiagnostic.AugerCannotInferConstructor(augerType.Locations.First()));
+                return "";
+            }
+            var constructor = constructors.First();
+
+            var generics = augerType is INamedTypeSymbol namedTypeSymbol ? namedTypeSymbol.TypeArguments : ImmutableArray<ITypeSymbol>.Empty;
+            if (generics.Any())
+            {
+                context.ReportDiagnostic(GrainAugerDiagnostic.AugerUsesGeneric(augerType.Locations.First(), generics.FirstOrDefault()?.ToDisplayString() ?? ""));
+                return "";
             }
             
-            var constructor = constructors.First();
             var parameters = constructor.Parameters;
             var processorVariableName = $"_processor{variableCounter++}";
             var paramStrings = new List<string>();
@@ -397,7 +415,10 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                     }
                     else
                     {
-                        // ERROR
+                        context.ReportDiagnostic(
+                            GrainAugerDiagnostic.LoadBalancerUsesUnknownParameter(augerType.Locations.First(), parameter.Type.ToDisplayString())
+                        );
+                        return "";
                     }
                 }
             }
@@ -602,5 +623,18 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         }
         
         return null;
+    }
+    
+    private static bool IsSupportedKeyType(ITypeSymbol typeSymbol)
+    {
+        return typeSymbol.OriginalDefinition.ToDisplayString() switch
+        {
+            "System.Guid" => true,
+            "long" => true,
+            "System.Int64" => true,
+            "string" => true,
+            "System.String" => true,
+            _ => false
+        };
     }
 }
