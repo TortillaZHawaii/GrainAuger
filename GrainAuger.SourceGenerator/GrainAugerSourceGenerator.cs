@@ -326,17 +326,17 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         if (keyType.OriginalDefinition.ToDisplayString() == "System.Guid")
         {
             grainType = "Guid";
-            getKeyMethod = "this.GetPrimaryKey()";
+            getKeyMethod = "global::Orleans.GrainExtensions.GetPrimaryKey(this)";
         }
         else if (keyType.OriginalDefinition.ToDisplayString() == "long")
         {
             grainType = "Integer";
-            getKeyMethod = "this.GetPrimaryKeyLong()";
+            getKeyMethod = "global::Orleans.GrainExtensions.GetPrimaryKeyLong(this)";
         }
         else if (keyType.OriginalDefinition.ToDisplayString() == "string")
         {
             grainType = "String";
-            getKeyMethod = "this.GetPrimaryKeyString()";
+            getKeyMethod = "global::Orleans.GrainExtensions.GetPrimaryKeyString(this)";
         }
         else
         {
@@ -470,11 +470,11 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                        
                 await base.OnActivateAsync(cancellationToken);
                 
-                var inputStreamProvider = this.GetStreamProvider({{node.PreviousNode.StreamProvider}});
+                var inputStreamProvider = global::Orleans.GrainStreamingExtensions.GetStreamProvider(this, {{node.PreviousNode.StreamProvider}});
                 var inputStreamId = global::Orleans.Runtime.StreamId.Create({{node.PreviousNode.StreamNamespace}}, {{getKeyMethod}});
                 var inputStream = inputStreamProvider.GetStream<{{inputType}}>(inputStreamId);
                 
-                var outputStreamProvider = this.GetStreamProvider({{node.StreamProvider}});
+                var outputStreamProvider = global::Orleans.GrainStreamingExtensions.GetStreamProvider(this, {{node.StreamProvider}});
                 var outputStreamId = global::Orleans.Runtime.StreamId.Create({{node.StreamNamespace}}, {{getKeyMethod}});
                 _outputStream = outputStreamProvider.GetStream<{{outputType}}>(outputStreamId);
                 {{(requiresAugerContext ? $"\n\t\t{augerContextDefinition}" : "")}}
