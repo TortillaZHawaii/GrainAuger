@@ -53,7 +53,7 @@ public class Job
     [AugerJobConfiguration("RomanToIntegerJob")]
     public void Configure(IAugerJobBuilder builder)
     {
-        var input = builder.FromStream<string, int>("Provider", "Stream");
+        var input = builder.FromStream<string, long>("Provider", "Stream");
         var intsStream = input.Process<RomanToIntegerTransform>();
     }
 }
