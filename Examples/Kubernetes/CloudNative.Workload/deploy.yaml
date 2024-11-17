@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:latest
+          ports:
+            - containerPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+spec:
+  selector:
+      app: redis
+  ports:
+    - name: tcp
+      protocol: TCP
+      port: 6379
+      targetPort: 6379
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fraud-detection-app
+  labels:
+    orleans/serviceId: fraud-detection-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      orleans/serviceId: fraud-detection-app
+  template:
+    metadata:
+      labels:
+        orleans/serviceId: fraud-detection-app
+        orleans/clusterId: fraud-detection-app
+    spec:
+      containers:
+        - name: orleans-dotnet-app
+          image: your-docker-repo/orleans-dotnet-app:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+            - containerPort: 443
+            - containerPort: 11111
+            - containerPort: 30000
+          resources:
+            requests:
+              cpu: 500m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1024Mi
+          env:
+            - name: REDIS_CONNECTION
+              value: "redis-service:6379"
+            # Configure settings to let Orleans know which cluster it belongs to
+            # and which pod it is running in
+            - name: ORLEANS_SERVICE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['orleans/serviceId']
+            - name: ORLEANS_CLUSTER_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['orleans/clusterId']
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: DOTNET_SHUTDOWNTIMEOUTSECONDS
+              value: "120"
+      terminationGracePeriodSeconds: 180
+              
