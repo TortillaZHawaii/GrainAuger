@@ -4,9 +4,9 @@ using Orleans.Streams;
 namespace GrainAuger.Windows;
 
 public class SessionWindowAuger<T>(
+    TimeSpan sessionTimeout,
     IAsyncObserver<List<T>> output,
-    IAugerContext context,
-    TimeSpan sessionTimeout
+    IAugerContext context
 ) : IAsyncObserver<T>
 {
     private IDisposable? _timer;

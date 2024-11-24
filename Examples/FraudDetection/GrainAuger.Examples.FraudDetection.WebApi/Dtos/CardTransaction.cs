@@ -5,5 +5,7 @@ public record CardTransaction(
     int Amount,
     int LimitLeft,
     Card Card,
+    double Latitude,
+    double Longitude,
     CardOwner Owner
 );

@@ -33,7 +33,9 @@ public class ProducerGrain : Grain, IProducerGrain
         int amount = _random.Next(1, 1000);
         var card = new Card("1234", "Debit", 12, 2020, "123");
         var owner = new CardOwner(1, "John", "Smith");
-        var transaction = new CardTransaction(amount, 100, card, owner);
+        var latitude = _random.NextDouble() + 40.0; 
+        var longitude = _random.NextDouble() * 2 - 80.0;
+        var transaction = new CardTransaction(amount, 100, card, latitude, longitude, owner);
         
         _logger.LogInformation("OnTimer: {Transaction}", transaction);
 
