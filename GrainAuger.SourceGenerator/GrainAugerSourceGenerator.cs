@@ -439,7 +439,10 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                     if (parameter.Type.OriginalDefinition.ToDisplayString() == "Orleans.Streams.IAsyncObserver<T>")
                     {
                         var outputTypeSymbol = parameter.Type as INamedTypeSymbol;
-                        outputType = GetGlobalTypeName(outputTypeSymbol!.TypeArguments.First());
+                        if (outputType == "")
+                        {
+                            outputType = GetGlobalTypeName(outputTypeSymbol!.TypeArguments.First());
+                        }
                         paramStrings.Add(lastObserver);
                     }
                     else if (parameter.Type.OriginalDefinition.ToDisplayString() ==
