@@ -32,6 +32,24 @@ spec:
       targetPort: 6379
   type: ClusterIP
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-service
+spec:
+  type: NodePort
+  selector:
+    orleans/serviceId: fraud-detection-app
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 443
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -50,12 +68,12 @@ spec:
         orleans/clusterId: fraud-detection-app
     spec:
       containers:
-        - name: orleans-dotnet-app
-          image: your-docker-repo/orleans-dotnet-app:latest
-          imagePullPolicy: IfNotPresent
+        - name: fraud-detection-app-container
+          image: augerimg:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 80
-            - containerPort: 443
+#            - containerPort: 443
             - containerPort: 11111
             - containerPort: 30000
           resources:
@@ -66,7 +84,9 @@ spec:
               cpu: 1000m
               memory: 1024Mi
           env:
-            - name: REDIS_CONNECTION
+            - name: ASPNETCORE_URLS
+              value: "http://+:80"
+            - name: RedisConnection
               value: "redis-service:6379"
             # Configure settings to let Orleans know which cluster it belongs to
             # and which pod it is running in

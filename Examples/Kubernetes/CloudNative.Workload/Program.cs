@@ -1,3 +1,5 @@
+using CloudNative.Workload.Grains;
+using Confluent.Kafka;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,9 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var app = builder.Build();
+string redisConnection = builder.Configuration["RedisConnection"] ?? "redis";
 
-string redisConnection = Environment.GetEnvironmentVariable("REDIS_CONNECTION") ?? "redis";
 var redisConfiguration = new ConfigurationOptions
 {
     EndPoints = { redisConnection }
@@ -26,9 +27,23 @@ builder.Host.UseOrleans(siloBuilder =>
     siloBuilder.UseDashboard(x => x.HostSelf = true);
 });
 
+var app = builder.Build();
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
+
+app.Map("/dashboard", configuration => { configuration.UseOrleansDashboard(); });
+
+app.MapGet("/hello", async (IClusterClient client, string text) =>
+{
+    var grain = client.GetGrain<IHelloGrain>(text);
+    return await grain.SayHello();
+});
+
+// Kubernetes probes
+app.MapGet("/health", () => "Healthy").WithName("Health");
+app.MapGet("/ready", () => "Ready").WithName("Ready");
 
 app.Run();
