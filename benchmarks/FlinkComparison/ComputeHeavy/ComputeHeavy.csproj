@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Content Include="..\..\..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\GrainAuger.SourceGenerator\GrainAuger.SourceGenerator.csproj" />
+      <ProjectReference Include="..\..\..\GrainAuger\GrainAuger.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Orleans.Server" Version="8.2.0" />
+      <PackageReference Include="Microsoft.Orleans.Streaming" Version="8.2.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Jobs\" />
+    </ItemGroup>
+
+</Project>

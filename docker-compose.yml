@@ -1,0 +1,6 @@
+﻿services:
+  computeheavy:
+    image: computeheavy
+    build:
+      context: .
+      dockerfile: benchmarks/FlinkComparison/ComputeHeavy/Dockerfile
