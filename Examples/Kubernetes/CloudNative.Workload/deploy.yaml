@@ -21,7 +21,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: redis-service
+  name: redis-svc
 spec:
   selector:
       app: redis
@@ -35,7 +35,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: app-service
+  name: app-svc
 spec:
   type: NodePort
   selector:
@@ -73,7 +73,6 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 80
-#            - containerPort: 443
             - containerPort: 11111
             - containerPort: 30000
           resources:
@@ -87,7 +86,9 @@ spec:
             - name: ASPNETCORE_URLS
               value: "http://+:80"
             - name: RedisConnection
-              value: "redis-service:6379"
+              value: "redis-svc:6379"
+            - name: KafkaConnection
+              value: "kafka-svc:9092"
             # Configure settings to let Orleans know which cluster it belongs to
             # and which pod it is running in
             - name: ORLEANS_SERVICE_ID
