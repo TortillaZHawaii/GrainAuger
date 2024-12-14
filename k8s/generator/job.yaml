@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: generator-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: generator
+        image: generatorimg:latest
+        imagePullPolicy: Never
+        args: ["1000000", "kafka-svc:9092"]
+      restartPolicy: Never
+  backoffLimit: 4
