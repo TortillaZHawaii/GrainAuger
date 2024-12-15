@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using GrainAuger.Abstractions;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
 
 namespace GrainAuger.SourceGenerator;
 
@@ -301,30 +298,6 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
 #pragma warning restore RS1035
         
         return SyntaxFactory.ParseSyntaxTree(code);
-    }
-
-    private void RunOrleansSourceGeneration(SourceProductionContext context, Compilation compilation, string hintName,
-        params SyntaxTree[] syntaxTrees)
-    {
-        string assemblyName = "Orleans.CodeGenerator";
-        string className = "Orleans.CodeGenerator.OrleansSerializationSourceGenerator";
-        var orleansCodeGeneratorType = Type.GetType(
-            $"{className}, {assemblyName}"
-        );
-        
-        if (orleansCodeGeneratorType is null)
-        {
-            context.ReportDiagnostic(Diagnostic.Create(
-                new DiagnosticDescriptor("GA001", "Orleans code generator not found", "Orleans code generator not found", "GrainAuger",
-                    DiagnosticSeverity.Error, true),
-                Location.None));
-            return;
-        }
-        
-        var orleansCodeGenerator = ((ISourceGenerator)Activator.CreateInstance(orleansCodeGeneratorType)!);
-        var generators = new[] { orleansCodeGenerator };
-        
-        GeneratorRunner.Run(context, compilation, hintName, generators, syntaxTrees);
     }
 
     private static string GenerateProcessGrainCode(SourceProductionContext context, string keyName, ProcessNode node)
