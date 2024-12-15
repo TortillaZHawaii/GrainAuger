@@ -29,8 +29,11 @@ func main() {
 
 	faker := gofakeit.New(seed)
 
+	opts := &gofakeit.CreditCardOptions{
+		Types: []string{"visa", "mastercard", "american-express"},
+	}
 	for i := 0; i < cardNumbersCount; i++ {
-		cardNumbers = append(cardNumbers, faker.CreditCardNumber(nil))
+		cardNumbers = append(cardNumbers, faker.CreditCardNumber(opts))
 	}
 
 	for i := 0; i < amount; i++ {
