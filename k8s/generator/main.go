@@ -12,7 +12,7 @@ import (
 
 type CardTransaction struct {
 	Id         int    `json:"id"`
-	CardNumber string `json:"card_number"`
+	CardNumber string `json:"cardNumber"`
 	Amount     int    `json:"amount"`
 }
 
@@ -47,7 +47,11 @@ func main() {
 	fmt.Println("Total transactions: ", len(transactions))
 	fmt.Println("First 5 transactions: ")
 	for i := 0; i < min(5, len(transactions)); i++ {
-		fmt.Printf("\t%+v\n", transactions[i])
+		jsonTransaction, err := json.Marshal(transactions[i])
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(string(jsonTransaction))
 	}
 
 	fmt.Printf("Sending transactions to Kafka to topic inputTransactions to broker %s\n", brokerUrl)

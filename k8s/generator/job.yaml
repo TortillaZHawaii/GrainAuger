@@ -9,6 +9,6 @@ spec:
       - name: generator
         image: generatorimg:latest
         imagePullPolicy: Never
-        args: ["1000000", "kafka-svc:9092"]
+        args: ["10", "kafka-svc:9092"]
       restartPolicy: Never
   backoffLimit: 4
