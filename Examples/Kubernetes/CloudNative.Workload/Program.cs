@@ -29,24 +29,16 @@ builder.Host.UseOrleans(siloBuilder =>
     {
         options.BrokerList = [kafkaConnection];
         options.ConsumerGroupId = "GrainAuger";
-        
-        options.AddExternalTopic<string>("inputTransactions");
-        options.AddTopic("inputStream", new TopicCreationConfig
+        var config = new TopicCreationConfig
         {
             AutoCreate = true,
-        });
-        options.AddTopic("ioBoundStream", new TopicCreationConfig
-        {
-            AutoCreate = true,
-        });
-        options.AddTopic("cpuBoundStream", new TopicCreationConfig
-        {
-            AutoCreate = true,
-        });
-        options.AddTopic("baseStream", new TopicCreationConfig
-        {
-            AutoCreate = true,
-        });
+            Partitions = 50,
+        };
+        // options.AddExternalTopic<string>("inputTransactions");
+        options.AddTopic("inputStream", config);
+        options.AddTopic("ioBoundStream", config);
+        options.AddTopic("cpuBoundStream", config);
+        options.AddTopic("baseStream", config);
     });
 
     siloBuilder.AddRedisGrainStorage("RedisStore", options => { options.ConfigurationOptions = redisConfiguration; });

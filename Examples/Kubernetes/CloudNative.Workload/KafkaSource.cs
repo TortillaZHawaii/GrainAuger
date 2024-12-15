@@ -39,6 +39,10 @@ public class KafkaSource : IHostedService
 
     private async Task ConsumeKafkaMessages(CancellationToken cancellationToken)
     {
+        var deserializeConfig = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+        };
         while (!cancellationToken.IsCancellationRequested)
         {
             try
@@ -47,7 +51,7 @@ public class KafkaSource : IHostedService
                 _logger.LogInformation("Consumed message with key {Key} and value {Value}", consumeResult.Message.Key, consumeResult.Message.Value);
                 var streamProvider = _clusterClient.GetStreamProvider("Kafka");
                 var stream = streamProvider.GetStream<CardTransaction>(StreamId.Create("inputStream", consumeResult.Message.Key));
-                var dto = JsonSerializer.Deserialize<CardTransaction>(consumeResult.Message.Value);
+                var dto = JsonSerializer.Deserialize<CardTransaction>(consumeResult.Message.Value, deserializeConfig);
                 if (dto == null)
                 {
                     _logger.LogWarning("Failed to deserialize message {Value}", consumeResult.Message.Value);
