@@ -32,7 +32,7 @@ builder.Host.UseOrleans(siloBuilder =>
         var config = new TopicCreationConfig
         {
             AutoCreate = true,
-            Partitions = 50,
+            Partitions = 10,
         };
         // options.AddExternalTopic<string>("inputTransactions");
         options.AddTopic("inputStream", config);

@@ -19,7 +19,7 @@ metadata:
   labels:
     orleans/serviceId: fraud-detection-app
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       orleans/serviceId: fraud-detection-app
@@ -39,12 +39,14 @@ spec:
             - containerPort: 30000
           resources:
             requests:
-              cpu: 500m
-              memory: 256Mi
+              cpu: 2500m
+              memory: 3Gi
             limits:
-              cpu: 3000m
-              memory: 2Gi
+              cpu: 2500m
+              memory: 3Gi
           env:
+            - name: DOTNET_GCHeapHardLimit
+              value: "0"
             - name: ASPNETCORE_URLS
               value: "http://+:80"
             - name: RedisConnection

@@ -2,9 +2,12 @@ using Orleans.Streams;
 
 namespace CloudNative.Workload.Augers;
 
+[GenerateSerializer]
 public class CardCompany
 {
+    [Id(0)]
     public CardTransaction Transaction { get; set; }
+    [Id(1)]
     public string Company { get; set; }
 }
 
