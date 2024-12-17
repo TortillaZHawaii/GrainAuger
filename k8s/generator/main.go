@@ -54,8 +54,39 @@ func main() {
 		fmt.Println(string(jsonTransaction))
 	}
 
-	fmt.Printf("Sending transactions to Kafka to topic inputTransactions to broker %s\n", brokerUrl)
+	fmt.Println("Removing inputTransactions topic")
+	broker := sarama.NewBroker(brokerUrl)
+	defer broker.Close()
+	if err = broker.Open(nil); err != nil {
+		fmt.Println("Failed to open broker:", err)
+		panic(err)
+	}
+	if ok, err := broker.Connected(); !ok {
+		fmt.Println("Failed to connect to broker:", err)
+	}
 
+	// Remove topic if it exists
+	_, err = broker.DeleteTopics(&sarama.DeleteTopicsRequest{
+		Topics: []string{"inputTransactions"},
+	})
+	if err != nil {
+		fmt.Println("Failed to delete topic:", err)
+	}
+
+	fmt.Println("Creating inputTransactions topic")
+	_, err = sarama.NewBroker(brokerUrl).CreateTopics(&sarama.CreateTopicsRequest{
+		TopicDetails: map[string]*sarama.TopicDetail{
+			"inputTransactions": {
+				NumPartitions:     10,
+				ReplicationFactor: 1,
+			},
+		},
+	})
+	if err != nil {
+		fmt.Printf("Failed to create topic: %s\n", err)
+	}
+
+	fmt.Printf("Sending transactions to Kafka to topic inputTransactions to broker %s\n", brokerUrl)
 	producer, err := sarama.NewSyncProducer([]string{brokerUrl}, nil)
 	if err != nil {
 		panic(err)
