@@ -40,10 +40,10 @@ spec:
           resources:
             requests:
               cpu: 2500m
-              memory: 3Gi
+              memory: 2500Mi
             limits:
               cpu: 2500m
-              memory: 3Gi
+              memory: 2500Mi
           env:
             - name: DOTNET_GCHeapHardLimit
               value: "0"
@@ -78,3 +78,25 @@ spec:
             - name: DOTNET_SHUTDOWNTIMEOUTSECONDS
               value: "20"
       terminationGracePeriodSeconds: 30
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: orleans-hosting
+rules:
+  - apiGroups: [ "" ]
+    resources: [ "pods" ]
+    verbs: [ "get", "watch", "list", "delete", "patch" ]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: orleans-hosting-binding
+subjects:
+  - kind: ServiceAccount
+    name: default
+    apiGroup: ''
+roleRef:
+  kind: Role
+  name: orleans-hosting
+  apiGroup: ''

@@ -34,7 +34,7 @@ spec:
     spec:
       containers:
         - name: kafka-container
-          image: kafka:latest
+          image: kafkaimg:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 9092
@@ -54,6 +54,13 @@ spec:
               value: '1'
             - name: DEFAULT_MIN_INSYNC_REPLICAS
               value: '1'
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 500m
+              memory: 1Gi
           volumeMounts:
             - name: data
               mountPath: /mnt/kafka
