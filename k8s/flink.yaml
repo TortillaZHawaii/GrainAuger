@@ -20,6 +20,9 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 8081
+            - containerPort: 6123
+            - containerPort: 6124
+            - containerPort: 6125
           command: ["/docker-entrypoint.sh"]
           args: ["standalone-job", "--job-classname", "workload.BenchmarkJob"]
           env:
@@ -66,8 +69,8 @@ spec:
         - name: flink-taskmanager
           image: flinkimg:latest
           imagePullPolicy: Never
-          command: ["taskmanager.sh"]
-          args: ["start-foreground"]
+          command: ["/docker-entrypoint.sh"]
+          args: ["taskmanager"]
           resources:
             requests:
               cpu: 2500m

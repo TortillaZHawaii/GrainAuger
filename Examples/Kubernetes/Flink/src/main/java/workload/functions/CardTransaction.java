@@ -48,4 +48,14 @@ public class CardTransaction {
             return null;
         }
     }
+
+    public String toJSON() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.writeValueAsString(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

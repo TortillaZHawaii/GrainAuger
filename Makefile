@@ -7,6 +7,18 @@ kafka:
 .PHONY: kafka-down
 kafka-down:
 	kubectl delete -f k8s/kafka.yaml
+	kubectl delete pvc -l app=kafka-app
+
+.PHONY: flink
+flink:
+	kubectl delete --ignore-not-found=true -f k8s/flink.yaml
+	docker build -t flinkimg -f ./Examples/Kubernetes/Flink/Dockerfile ./Examples/Kubernetes/Flink
+	minikube image load flinkimg
+	kubectl apply -f k8s/flink.yaml
+
+.PHONY: flink-down
+flink-down:
+	kubectl delete -f k8s/flink.yaml
 
 .PHONY: auger
 auger: redis

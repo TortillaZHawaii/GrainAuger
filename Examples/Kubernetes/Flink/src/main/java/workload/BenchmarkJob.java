@@ -2,13 +2,20 @@ package workload;
 
 import java.io.Console;
 
+import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
+import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
+import org.apache.flink.connector.kafka.sink.KafkaSink;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
+import workload.functions.CardTransaction;
+import workload.functions.PassthroughFunction;
+
 public class BenchmarkJob {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         String bootstrapServer = "kafka-svc:9092";
@@ -17,25 +24,28 @@ public class BenchmarkJob {
             .setBootstrapServers(bootstrapServer)
             .setTopics("inputTransactions")
             .setGroupId("flink-benchmark")
-            .setStartingOffsets(KafkaSource.InitialOffset.earliest())
             .setValueOnlyDeserializer(new SimpleStringSchema())
             .build();
 
         DataStream<String> kafkaStream = env.fromSource(kafkaSource, WatermarkStrategy.noWatermarks(), "Kafka Source");
 
-        KeyedStream<CardTransaction> inputStream = kafkaStream
-            .map(CardTransaction::fromJSON)
+        DataStream<CardTransaction> inputStream = kafkaStream
+            .map(CardTransaction::fromJSON);
+        KeyedStream<CardTransaction, String> keyedStream = inputStream
             .keyBy(CardTransaction::getCardNumber);
-
+        
         // Base case
         KafkaSink<String> baseSink = KafkaSink.<String>builder()
             .setBootstrapServers(bootstrapServer)
-            .setTopic("baseTransactions")
-            .setValueSerializer(new SimpleStringSchema())
+            .setRecordSerializer(KafkaRecordSerializationSchema.builder()
+                .setTopic("baseOutput")
+                .setValueSerializationSchema(new SimpleStringSchema())
+                .build())
             .build();
-        KeyStream<CardTransaction> baseStream = inputStream
-            .process(new BaseProcessFunction())
+        keyedStream.process(new PassthroughFunction())
             .map(CardTransaction::toJSON)
             .sinkTo(baseSink);
+
+        env.execute("Flink Benchmark Job");
     }
 }
