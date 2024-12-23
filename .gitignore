@@ -6,6 +6,8 @@
 # .auger.g.cs
 **/*.auger.g.cs
 
+.vscode/
+
 # dotenv files
 .env
 

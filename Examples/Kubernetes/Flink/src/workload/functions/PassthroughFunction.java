@@ -1,5 +1,7 @@
 package workload.functions;
 
+import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
+
 public class PassthroughFunction extends KeyedProcessFunction<String, CardTransaction, CardTransaction> {
     private static final long serialVersionUID = 1L;
 

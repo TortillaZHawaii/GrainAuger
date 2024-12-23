@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flink-jobmanager
+  labels:
+    app: flink-jobmanager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flink-jobmanager
+  template:
+    metadata:
+      labels:
+        app: flink-jobmanager
+    spec:
+      containers:
+        - name: flink-jobmanager
+          image: flinkimg:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8081
+          command: ["/docker-entrypoint.sh"]
+          args: ["standalone-job", "--job-classname", "workload.BenchmarkJob"]
+          env:
+            - name: FLINK_PROPERTIES
+              value: |
+                jobmanager.rpc.address: flink-jobmanager-svc
+                taskmanager.numberOfTaskSlots: 2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flink-jobmanager-svc
+spec:
+  selector:
+    app: flink-jobmanager
+  ports:
+    - name: rpc
+      port: 6123
+    - name: blob
+      port: 6124
+    - name: query
+      port: 6125
+    - name: ui
+      port: 8081
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flink-taskmanager
+  labels:
+    app: flink
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: flink
+  template:
+    metadata:
+      labels:
+        app: flink
+    spec:
+      containers:
+        - name: flink-taskmanager
+          image: flinkimg:latest
+          imagePullPolicy: Never
+          command: ["taskmanager.sh"]
+          args: ["start-foreground"]
+          resources:
+            requests:
+              cpu: 2500m
+              memory: 2500Mi
+            limits:
+              cpu: 2500m
+              memory: 2500Mi
+          env:
+            - name: FLINK_PROPERTIES
+              value: |
+                jobmanager.rpc.address: flink-jobmanager-svc
+                taskmanager.numberOfTaskSlots: 5
+                parallelism.default: 2

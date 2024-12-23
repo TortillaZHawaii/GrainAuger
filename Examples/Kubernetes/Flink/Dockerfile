@@ -11,6 +11,6 @@ RUN mvn -f pom.xml clean package
 
 FROM flink:${FLINK_VERSION}
 
-COPY --from=build /app/target/flink-k8s-example-1.0-SNAPSHOT.jar /app.jar
+COPY --from=build /app/target/flink-project-1.0-SNAPSHOT.jar /opt/flink/usrlib/app.jar
 
-CMD ["standalone-job", "--job-classname", "workload.BenchmarkJob"]
+# CMD ["standalone-job", "--job-classname", "workload.BenchmarkJob"]
