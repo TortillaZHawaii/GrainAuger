@@ -1,7 +1,5 @@
 package workload;
 
-import java.io.Console;
-
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
@@ -11,8 +9,10 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
+import workload.functions.CardCompany;
 import workload.functions.CardTransaction;
 import workload.functions.PassthroughFunction;
+import workload.functions.RemoteFunction;
 
 public class BenchmarkJob {
     public static void main(String[] args) throws Exception {
@@ -45,6 +45,18 @@ public class BenchmarkJob {
         keyedStream.process(new PassthroughFunction())
             .map(CardTransaction::toJSON)
             .sinkTo(baseSink);
+
+        // Remote function
+        KafkaSink<String> remoteSink = KafkaSink.<String>builder()
+            .setBootstrapServers(bootstrapServer)
+            .setRecordSerializer(KafkaRecordSerializationSchema.builder()
+                .setTopic("remoteOutput")
+                .setValueSerializationSchema(new SimpleStringSchema())
+                .build())
+            .build();
+        keyedStream.process(new RemoteFunction())
+            .map(CardCompany::toJSON)
+            .sinkTo(remoteSink);
 
         env.execute("Flink Benchmark Job");
     }
