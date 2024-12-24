@@ -11,6 +11,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 import workload.functions.CardCompany;
 import workload.functions.CardTransaction;
+import workload.functions.PalindromeFunction;
 import workload.functions.PassthroughFunction;
 import workload.functions.RemoteFunction;
 
@@ -57,6 +58,18 @@ public class BenchmarkJob {
         keyedStream.process(new RemoteFunction())
             .map(CardCompany::toJSON)
             .sinkTo(remoteSink);
+
+        // Palindrome function
+        KafkaSink<String> palindromeSink = KafkaSink.<String>builder()
+            .setBootstrapServers(bootstrapServer)
+            .setRecordSerializer(KafkaRecordSerializationSchema.builder()
+                .setTopic("palindromeOutput")
+                .setValueSerializationSchema(new SimpleStringSchema())
+                .build())
+            .build();
+        keyedStream.process(new PalindromeFunction())
+            .map(PalindromeFunction::toJSON)
+            .sinkTo(palindromeSink);
 
         env.execute("Flink Benchmark Job");
     }
