@@ -77,7 +77,7 @@ func main() {
 	_, err = sarama.NewBroker(brokerUrl).CreateTopics(&sarama.CreateTopicsRequest{
 		TopicDetails: map[string]*sarama.TopicDetail{
 			"inputTransactions": {
-				NumPartitions:     10,
+				NumPartitions:     3,
 				ReplicationFactor: 1,
 			},
 		},

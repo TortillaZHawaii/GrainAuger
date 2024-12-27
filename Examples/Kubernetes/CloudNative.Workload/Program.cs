@@ -25,14 +25,14 @@ builder.Host.UseOrleans(siloBuilder =>
 
     siloBuilder.UseKubernetesHosting();
 
-    siloBuilder.AddKafkaStreamProvider("Kafka", options => 
+    siloBuilder.AddKafkaStreamProvider("Kafka", options =>
     {
         options.BrokerList = [kafkaConnection];
         options.ConsumerGroupId = "GrainAuger";
         var config = new TopicCreationConfig
         {
             AutoCreate = true,
-            Partitions = 10,
+            Partitions = 3,
         };
         // options.AddExternalTopic<string>("inputTransactions");
         options.AddTopic("inputStream", config);
@@ -80,7 +80,8 @@ app.MapGet("/print", async (IClusterClient client, ILogger<CardTransaction> log,
     try
     {
         await stream.OnNextAsync(text);
-    } catch (Exception ex)
+    }
+    catch (Exception ex)
     {
         log.LogError("Error processing item: {Error}", ex.Message);
         return "Error";
@@ -100,7 +101,8 @@ app.MapPost("/transaction", async (IClusterClient client, ILogger<CardTransactio
     try
     {
         await stream.OnNextAsync(transaction);
-    } catch (Exception ex)
+    }
+    catch (Exception ex)
     {
         log.LogError("Error processing item: {Error}", ex.Message);
         return "Error";

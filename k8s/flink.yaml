@@ -29,7 +29,8 @@ spec:
             - name: FLINK_PROPERTIES
               value: |
                 jobmanager.rpc.address: flink-jobmanager-svc
-                taskmanager.numberOfTaskSlots: 2
+                taskmanager.numberOfTaskSlots: 6
+                parallelism.default: 3
 ---
 apiVersion: v1
 kind: Service
@@ -82,5 +83,5 @@ spec:
             - name: FLINK_PROPERTIES
               value: |
                 jobmanager.rpc.address: flink-jobmanager-svc
-                taskmanager.numberOfTaskSlots: 5
-                parallelism.default: 2
+                taskmanager.numberOfTaskSlots: 6
+                parallelism.default: 3
