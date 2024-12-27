@@ -49,6 +49,16 @@ company:
 company-down:
 	kubectl delete -f k8s/company.yaml
 
+.PHONY: jsondumper
+jsondumper: 
+	docker build -t jsondumperimg -f ./k8s/jsondumper/Dockerfile ./k8s/jsondumper
+	minikube image load jsondumperimg
+	kubectl apply -f k8s/jsondumper.yaml
+
+.PHONY: jsondumper-down
+jsondumper-down:
+	kubectl delete -f k8s/jsondumper.yaml
+
 .PHONY: generate
 generate:
 	kubectl delete --ignore-not-found=true -f k8s/generator/job.yaml
