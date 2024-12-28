@@ -1,8 +1,10 @@
 # URL of the server
-$serverUrl = $args[0] -or "http://localhost:8000"
+$serverUrl = $args[0]
+Write-Host "Downloading files from $serverUrl..."
 
 # Directory to save the downloaded files
-$downloadDir = $args[1] -or "./downloads"
+$downloadDir = $args[1]
+Write-Host "Files will be saved to $downloadDir..."
 
 # Create the download directory if it doesn't exist
 if (-not (Test-Path -Path $downloadDir)) {
@@ -10,7 +12,8 @@ if (-not (Test-Path -Path $downloadDir)) {
 }
 
 # Get the list of files from the server
-$fileList = Invoke-WebRequest -Uri $serverUrl | Select-String -Pattern 'href="[^"]*"' | ForEach-Object { $_.Matches.Groups[1].Value }
+$Website = Invoke-WebRequest -Uri $serverUrl
+$fileList = $Website.Links.href
 
 # Download each file
 foreach ($file in $fileList) {
