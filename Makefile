@@ -21,7 +21,7 @@ flink-down:
 	kubectl delete -f k8s/flink.yaml
 
 .PHONY: auger
-auger: redis
+auger:
 	kubectl delete --ignore-not-found=true -f k8s/auger.yaml
 	docker build --no-cache -t augerimg -f ./Examples/Kubernetes/CloudNative.Workload/Dockerfile .   
 	minikube image load augerimg
@@ -30,14 +30,6 @@ auger: redis
 .PHONY: auger-down
 auger-down:
 	kubectl delete -f k8s/auger.yaml
-
-.PHONY: redis
-redis:
-	kubectl apply -f k8s/redis.yaml
-
-.PHONY: redis-down
-redis-down:
-	kubectl delete -f k8s/redis.yaml
 
 .PHONY: company
 company: 
@@ -67,4 +59,22 @@ generate:
 	kubectl apply -f k8s/generator/job.yaml
 
 .PHONY: clean
-clean: kafka-down auger-down redis-down
+clean: kafka-down auger-down company-down jsondumper-down flink-down
+
+.PHONY: bench-auger
+bench-auger: kafka company generate auger
+
+.PHONY: bench-flink
+bench-flink: kafka company generate flink
+
+.PHONY: cluster-3cpu-4gb
+cluster-3cpu-4gb:
+	minikube start --nodes 3 --kubernetes-version v1.31 --addons dashboard,metrics-server --cpus 3 --memory 4g
+
+.PHONY: cluster-10cpu-16gb
+cluster-10cpu-16gb:
+	minikube start --nodes 3 --kubernetes-version v1.31 --addons dashboard,metrics-server --cpus 10 --memory 16g
+
+.PHONY: cluster-down
+cluster-down:
+	minikube delete

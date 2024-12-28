@@ -45,6 +45,8 @@ spec:
               cpu: 2500m
               memory: 2500Mi
           env:
+            - name: LOGGING__LOGLEVEL__SYSTEM
+              value: "Warning"
             - name: DOTNET_GCHeapHardLimit
               value: "0"
             - name: ASPNETCORE_URLS
@@ -100,3 +102,37 @@ roleRef:
   kind: Role
   name: orleans-hosting
   apiGroup: ''
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:latest
+          ports:
+            - containerPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-svc
+spec:
+  selector:
+      app: redis
+  ports:
+    - name: tcp
+      protocol: TCP
+      port: 6379
+      targetPort: 6379
+  type: ClusterIP
