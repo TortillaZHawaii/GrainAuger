@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/brianvoe/gofakeit/v7"
@@ -61,29 +62,39 @@ func main() {
 		fmt.Println("Failed to open broker:", err)
 		panic(err)
 	}
-	if ok, err := broker.Connected(); !ok {
+	if ok, err := broker.Connected(); !ok || err != nil {
 		fmt.Println("Failed to connect to broker:", err)
 	}
 
 	// Remove topic if it exists
-	_, err = broker.DeleteTopics(&sarama.DeleteTopicsRequest{
-		Topics: []string{"inputTransactions"},
+	delRes, err := broker.DeleteTopics(&sarama.DeleteTopicsRequest{
+		Topics:  []string{"inputTransactions"},
+		Timeout: time.Minute,
 	})
 	if err != nil {
 		fmt.Println("Failed to delete topic:", err)
 	}
+	if delRes.TopicErrorCodes["inputTransactions"] != sarama.ErrNoError {
+		fmt.Println("Failed to delete topic:", delRes.TopicErrorCodes["inputTransactions"])
+	}
 
 	fmt.Println("Creating inputTransactions topic")
-	_, err = sarama.NewBroker(brokerUrl).CreateTopics(&sarama.CreateTopicsRequest{
+	resCreate, err := broker.CreateTopics(&sarama.CreateTopicsRequest{
 		TopicDetails: map[string]*sarama.TopicDetail{
 			"inputTransactions": {
 				NumPartitions:     3,
 				ReplicationFactor: 1,
 			},
 		},
+		Timeout: time.Minute,
 	})
 	if err != nil {
 		fmt.Printf("Failed to create topic: %s\n", err)
+	}
+	if err, ok := resCreate.TopicErrors["inputTransactions"]; ok && err != nil {
+		fmt.Printf("Failed to create topic: %s\n", resCreate.TopicErrors["inputTransactions"])
+	} else {
+		fmt.Printf("Response from creating topic: %+v\n", resCreate)
 	}
 
 	fmt.Printf("Sending transactions to Kafka to topic inputTransactions to broker %s\n", brokerUrl)

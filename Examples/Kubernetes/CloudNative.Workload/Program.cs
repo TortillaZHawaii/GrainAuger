@@ -61,7 +61,7 @@ app.UseSwaggerUI();
 
 // app.UseHttpsRedirection();
 
-app.Map("/dashboard", configuration => { configuration.UseOrleansDashboard(); });
+app.Map("", configuration => { configuration.UseOrleansDashboard(); });
 
 app.MapGet("/hello", async (IClusterClient client, string text) =>
 {
