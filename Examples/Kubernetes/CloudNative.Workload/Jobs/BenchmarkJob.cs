@@ -6,12 +6,12 @@ namespace CloudNative.Workload.Jobs;
 public class BenchmarkJob
 {
     [AugerJobConfiguration("BenchmarkJob")]
-     static void Configure(IAugerJobBuilder builder)
-     {
-         var inputStream = builder.FromStream<CardTransaction, string>("Kafka", "inputStream");
+    static void Configure(IAugerJobBuilder builder)
+    {
+        var inputStream = builder.FromStream<CardTransaction, string>("Memory", "inputStream");
 
-         var cpuBoundStream = inputStream.Process<PalindromeAuger>();
-         var ioBoundStream = inputStream.Process<RemoteAuger>();
-         var baseStream = inputStream.Process<PassthroughAuger>();
-     }
+        var cpuBoundStream = inputStream.Process<PalindromeAuger>("Kafka");
+        var ioBoundStream = inputStream.Process<RemoteAuger>("Kafka");
+        var baseStream = inputStream.Process<PassthroughAuger>("Kafka");
+    }
 }

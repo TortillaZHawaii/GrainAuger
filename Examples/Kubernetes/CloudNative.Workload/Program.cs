@@ -21,7 +21,7 @@ var redisConfiguration = new ConfigurationOptions
 builder.Host.UseOrleans(siloBuilder =>
 {
     siloBuilder.AddMemoryGrainStorage("PubSubStore");
-    siloBuilder.AddMemoryStreams("MemoryProvider");
+    siloBuilder.AddMemoryStreams("Memory");
 
     siloBuilder.UseKubernetesHosting();
 

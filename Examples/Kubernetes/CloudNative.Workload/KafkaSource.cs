@@ -49,7 +49,7 @@ public class KafkaSource : IHostedService
             {
                 var consumeResult = _consumer.Consume(cancellationToken);
                 _logger.LogInformation("Consumed message with key {Key} and value {Value}", consumeResult.Message.Key, consumeResult.Message.Value);
-                var streamProvider = _clusterClient.GetStreamProvider("Kafka");
+                var streamProvider = _clusterClient.GetStreamProvider("Memory");
                 var stream = streamProvider.GetStream<CardTransaction>(StreamId.Create("inputStream", consumeResult.Message.Key));
                 var dto = JsonSerializer.Deserialize<CardTransaction>(consumeResult.Message.Value, deserializeConfig);
                 if (dto == null)
