@@ -22,7 +22,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                 GetMethodDeclarationForSourceGen)
             .Where(t => t is { jobConfigurationAttributeFound: true, syntax: not null })
             .Select((t, _) => t.syntax);
-        
+
         context.RegisterSourceOutput(
             context.CompilationProvider.Combine(methodProvider.Collect()),
             (ctx, t) => GenerateJobs(ctx, t.Left, t.Right));
@@ -33,7 +33,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
     {
         var methodDeclarationSyntax = (MethodDeclarationSyntax)context.Node;
 
-        foreach (var attributeListSyntax in methodDeclarationSyntax.AttributeLists)    
+        foreach (var attributeListSyntax in methodDeclarationSyntax.AttributeLists)
         {
             foreach (var attributeSyntax in attributeListSyntax.Attributes)
             {
@@ -41,9 +41,9 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                 {
                     continue;
                 }
-                
+
                 var attributeName = attributeSymbol.ContainingType.ToDisplayString();
-                
+
                 if (attributeName == "GrainAuger.Abstractions.AugerJobConfigurationAttribute")
                 {
                     return (methodDeclarationSyntax, true);
@@ -61,7 +61,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         {
             Capacity = methodDeclarations.Length
         };
-        
+
         foreach (var methodDeclaration in methodDeclarations)
         {
             var tree = GenerateJob(context, compilation, methodDeclaration);
@@ -78,15 +78,15 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         MethodDeclarationSyntax methodDeclaration)
     {
         var semanticModel = compilation.GetSemanticModel(methodDeclaration.SyntaxTree);
-        
+
         if (ModelExtensions.GetDeclaredSymbol(semanticModel, methodDeclaration) is not IMethodSymbol methodSymbol)
         {
             return null;
         }
-        
+
         var namespaceName = $"GrainAugerCodeGen.{GetNamespaceName(methodSymbol)}";
         var jobName = GetJobNameFromAttribute(methodSymbol);
-        
+
         var grainCodes = new List<string>();
         var statements = GetStatements(methodDeclaration.Body!);
 
@@ -102,7 +102,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             // var expiredCardStream = inputStream.Process<ExpiredCardDetector>("expiredCardStream");
             // if statement is other than invocation of the Process method or FromStream method
             // put a warning in the analyzer
-            
+
             // Given example statement:
             // IAugerStream overLimitStream = inputStream.Process<OverLimitDetector, OverLimitDetector>("overLimitStream");
             // I want to display the following code:
@@ -115,7 +115,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                 hasErrors = true;
                 continue;
             }
-            
+
             var memberAccess = invocation.Expression as MemberAccessExpressionSyntax;
             if (memberAccess is null)
             {
@@ -123,9 +123,9 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                 hasErrors = true;
                 continue;
             }
-            
+
             var methodName = memberAccess.Name.Identifier.ToString();
-            
+
             if (statement is not LocalDeclarationStatementSyntax localDeclarationStatement)
             {
                 context.ReportDiagnostic(GrainAugerDiagnostic.MissingOutputVariable(statement.GetLocation()));
@@ -139,119 +139,128 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                 hasErrors = true;
                 continue;
             }
-            
+
             var outputName = localDeclarationStatement.Declaration.Variables.First().Identifier.ToString();
 
             switch (methodName)
             {
                 case "FromStream":
-                {
-                    var genericTypes = GetGenericTypes(invocation, semanticModel);
-                
-                    grainCodes.Add($"Foreign Source <{genericTypes.First()}> -> {outputName}");
-
-                    // get arguments of the FromStream method
-                    var arguments = invocation.ArgumentList.Arguments;
-
-                    var streamProvider = arguments[0].Expression.ToString();
-                    var streamNamespace = arguments[1].Expression.ToString();
-                    
-                    var keyType = genericTypes.Last();
-                    if (!IsSupportedKeyType(keyType))
                     {
-                        context.ReportDiagnostic(GrainAugerDiagnostic.WrongKeyType(keyType.Locations.First(), keyType.ToDisplayString()));
-                        hasErrors = true;
-                        continue;
-                    }
+                        var genericTypes = GetGenericTypes(invocation, semanticModel);
 
-                    dag.Add(outputName, new FromStreamNode(
-                        streamNamespace,
-                        streamProvider,
-                        genericTypes.First(),
-                        genericTypes.Last()
-                    ));
-                    break;
-                }
-                case "Process":
-                {
-                    var inputName = memberAccess!.Expression.ToString();
-                    if (localDeclarationStatement.Declaration.Variables.Count != 1)
-                    {
-                        context.ReportDiagnostic(
-                            GrainAugerDiagnostic.MissingOutputVariable(localDeclarationStatement.GetLocation())
-                        );
-                        hasErrors = true;
-                        continue;
-                    }
-                    
-                    var genericTypes = GetGenericTypes(invocation, semanticModel);
-                    grainCodes.Add($"{inputName} -[{string.Join(", ", genericTypes)}]-> {outputName}");
+                        grainCodes.Add($"Foreign Source <{genericTypes.First()}> -> {outputName}");
 
-                    var constructors = GetPublicConstructors(genericTypes.Last());
-                    if (constructors.Count() != 1)
-                    {
-                        // put a warning in the analyzer
-                        context.ReportDiagnostic(Diagnostic.Create(
-                            new DiagnosticDescriptor("GA003", "Invalid constructors",
-                                "Auger should have exactly one public constructor", "GrainAuger",
-                                DiagnosticSeverity.Error, true),
-                            genericTypes.Last().OriginalDefinition.Locations.First()));
-                        hasErrors = true;
-                        continue;
-                    }
+                        // get arguments of the FromStream method
+                        var arguments = invocation.ArgumentList.Arguments;
 
-                    var output = constructors.First().Parameters
-                        .Where(p => p.Type.OriginalDefinition.ToDisplayString() == "Orleans.Streams.IAsyncObserver<T>")
-                        .Select(p => p.Type as INamedTypeSymbol)
-                        .Select(p => p!.TypeArguments.First())
-                        .FirstOrDefault();
+                        var streamProvider = arguments[0].Expression.ToString();
+                        var streamNamespace = arguments[1].Expression.ToString();
 
-                    // Get key type based on the output of the previous node
-                    ITypeSymbol? lbOutput = null;
-                    ITypeSymbol keyType = dag[inputName].OutputKeyType;
-                    
-                    var last = genericTypes.Last();
-                    if (IsLoadBalancerType(last))
-                    {
-                        lbOutput = last.BaseType?.TypeArguments.First();
-                        var keyByKeyType = GetKeyByKeyType(genericTypes.Last());
-                        
-                        if (keyByKeyType is not null && !IsSupportedKeyType(keyByKeyType))
+                        var keyType = genericTypes.Last();
+                        if (!IsSupportedKeyType(keyType))
                         {
-                            context.ReportDiagnostic(GrainAugerDiagnostic.WrongKeyType(keyByKeyType.Locations.First(), keyByKeyType.ToDisplayString()));
+                            context.ReportDiagnostic(GrainAugerDiagnostic.WrongKeyType(keyType.Locations.First(), keyType.ToDisplayString()));
                             hasErrors = true;
                             continue;
                         }
-                        
-                        // Key type changes key to either String, Guid or Long
-                        // Otherwise LBs use long as the key
-                        keyType = keyByKeyType ??
-                                  compilation.GetTypeByMetadataName("System.Int64")!;
-                    }
 
-                    if (output is null && lbOutput is null)
+                        dag.Add(outputName, new FromStreamNode(
+                            streamNamespace,
+                            streamProvider,
+                            genericTypes.First(),
+                            genericTypes.Last()
+                        ));
+                        break;
+                    }
+                case "Process":
                     {
-                        context.ReportDiagnostic(GrainAugerDiagnostic.AugerCannotInferConstructor(genericTypes.Last()
-                            .OriginalDefinition.Locations.First()));
-                        hasErrors = true;
-                        continue;
-                    }
+                        var inputName = memberAccess!.Expression.ToString();
+                        string providerName = "";
+                        if (localDeclarationStatement.Declaration.Variables.Count != 1)
+                        {
+                            context.ReportDiagnostic(
+                                GrainAugerDiagnostic.MissingOutputVariable(localDeclarationStatement.GetLocation())
+                            );
+                            hasErrors = true;
+                            continue;
+                        }
 
-                    dag.Add(outputName, new ProcessNode(
-                        dag[inputName],
-                        genericTypes,
-                        output ?? lbOutput!,
-                        keyType,
-                        $"\"{outputName}\""));
-                    break;
-                }
+                        // get list of arguments of the Process method
+                        var arguments = invocation.ArgumentList.Arguments;
+                        if (arguments.Count > 0)
+                        {
+                            providerName = arguments[0].Expression.ToString();
+                        }
+
+                        var genericTypes = GetGenericTypes(invocation, semanticModel);
+                        grainCodes.Add($"{inputName} -[{string.Join(", ", genericTypes)}]-> {outputName}");
+
+                        var constructors = GetPublicConstructors(genericTypes.Last());
+                        if (constructors.Count() != 1)
+                        {
+                            // put a warning in the analyzer
+                            context.ReportDiagnostic(Diagnostic.Create(
+                                new DiagnosticDescriptor("GA003", "Invalid constructors",
+                                    "Auger should have exactly one public constructor", "GrainAuger",
+                                    DiagnosticSeverity.Error, true),
+                                genericTypes.Last().OriginalDefinition.Locations.First()));
+                            hasErrors = true;
+                            continue;
+                        }
+
+                        var output = constructors.First().Parameters
+                            .Where(p => p.Type.OriginalDefinition.ToDisplayString() == "Orleans.Streams.IAsyncObserver<T>")
+                            .Select(p => p.Type as INamedTypeSymbol)
+                            .Select(p => p!.TypeArguments.First())
+                            .FirstOrDefault();
+
+                        // Get key type based on the output of the previous node
+                        ITypeSymbol? lbOutput = null;
+                        ITypeSymbol keyType = dag[inputName].OutputKeyType;
+
+                        var last = genericTypes.Last();
+                        if (IsLoadBalancerType(last))
+                        {
+                            lbOutput = last.BaseType?.TypeArguments.First();
+                            var keyByKeyType = GetKeyByKeyType(genericTypes.Last());
+
+                            if (keyByKeyType is not null && !IsSupportedKeyType(keyByKeyType))
+                            {
+                                context.ReportDiagnostic(GrainAugerDiagnostic.WrongKeyType(keyByKeyType.Locations.First(), keyByKeyType.ToDisplayString()));
+                                hasErrors = true;
+                                continue;
+                            }
+
+                            // Key type changes key to either String, Guid or Long
+                            // Otherwise LBs use long as the key
+                            keyType = keyByKeyType ??
+                                      compilation.GetTypeByMetadataName("System.Int64")!;
+                        }
+
+                        if (output is null && lbOutput is null)
+                        {
+                            context.ReportDiagnostic(GrainAugerDiagnostic.AugerCannotInferConstructor(genericTypes.Last()
+                                .OriginalDefinition.Locations.First()));
+                            hasErrors = true;
+                            continue;
+                        }
+
+                        dag.Add(outputName, new ProcessNode(
+                            dag[inputName],
+                            genericTypes,
+                            output ?? lbOutput!,
+                            keyType,
+                            $"\"{outputName}\"",
+                            providerName));
+                        break;
+                    }
                 default:
                     context.ReportDiagnostic(GrainAugerDiagnostic.InvalidMethod(localDeclarationStatement.GetLocation(), methodName));
                     hasErrors = true;
                     break;
             }
         }
-        
+
         if (hasErrors)
         {
             return null;
@@ -288,7 +297,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         string hintNamePrefix = $"{namespaceName}.{jobName}";
         string hintName = $"{hintNamePrefix}.auger.g.cs";
         // context.AddSource(hintName, SourceText.From(code, Encoding.UTF8));
-        
+
         // We can't save the file to disk
         // IO operations are not allowed in the source generator
         // RS1035: The symbol 'File' is banned for use by analyzers: Do not do file IO in analyzers
@@ -296,7 +305,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
 #pragma warning disable RS1035
         File.WriteAllText(path + ".auger.g.cs", code);
 #pragma warning restore RS1035
-        
+
         return SyntaxFactory.ParseSyntaxTree(code);
     }
 
@@ -328,10 +337,10 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
 
         Dictionary<string, string> insertedVariables = new();
         int variableCounter = 0;
-        
+
         List<string> processorDefinitions = new();
         List<string> processorConstructors = new();
-        
+
         insertedVariables.Add($"global::Microsoft.Extensions.Logging.ILogger<{keyName}>", "logger");
 
         var inputType = GetGlobalTypeName(node.PreviousNode.OutputType);
@@ -339,13 +348,13 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         string firstProcessorName = "";
         // public visibility is required for the Orleans framework to find suitable constructor
         string visibility = "public";
-        
+
         string augerContextVariableName = "augerContext";
         string augerContextDefinition = $"global::GrainAuger.Core.AugerContext {augerContextVariableName} = new (this.RegisterTimer);";
         bool requiresAugerContext = false;
-        
+
         var lastObserver = "_outputStream";
-        
+
         foreach (var augerType in node.AugerTypes.Reverse())
         {
             var constructors = GetPublicConstructors(augerType);
@@ -362,17 +371,17 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                 context.ReportDiagnostic(GrainAugerDiagnostic.AugerUsesGeneric(augerType.Locations.First(), generics.FirstOrDefault()?.ToDisplayString() ?? ""));
                 return "";
             }
-            
+
             var parameters = constructor.Parameters;
             var processorVariableName = $"_processor{variableCounter++}";
             var paramStrings = new List<string>();
-            
+
             firstProcessorName = processorVariableName;
 
             if (IsLoadBalancerType(augerType))
             {
                 outputType = GetGlobalTypeName(augerType.BaseType!.TypeArguments.First());
-                
+
                 foreach (var parameter in parameters)
                 {
                     // output namespace, make equal to the output variable name
@@ -439,7 +448,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
                     }
                 }
             }
-            
+
             lastObserver = processorVariableName;
             var globalAuger = GetGlobalTypeName(augerType);
             processorDefinitions.Add($"private {globalAuger} {processorVariableName} = null!;");
@@ -510,13 +519,13 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         }
         """;
     }
-    
+
     private static string GetNamespaceName(ISymbol methodSymbol)
     {
         var namespaceName = methodSymbol.ContainingNamespace.ToDisplayString();
         return namespaceName;
     }
-    
+
     private static string GetJobNameFromAttribute(ISymbol methodSymbol)
     {
         var attributes = methodSymbol.GetAttributes();
@@ -528,28 +537,28 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         {
             return jobName;
         }
-        
+
         if (attribute?.ConstructorArguments.FirstOrDefault().Value is string jobNameFromIndex)
         {
             return jobNameFromIndex;
         }
-        
+
         return "UnknownJobName";
     }
-    
+
     // Get statements from the method
     private static IEnumerable<StatementSyntax> GetStatements(SyntaxNode methodDeclaration)
     {
         var statements = methodDeclaration.DescendantNodes().OfType<StatementSyntax>();
         return statements;
     }
-    
+
     private static ImmutableArray<ITypeSymbol> GetGenericTypes(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
     {
         var symbol = ModelExtensions.GetSymbolInfo(semanticModel, invocation).Symbol;
         return symbol is not IMethodSymbol method ? [] : method.TypeArguments;
     }
-    
+
     private static ImmutableArray<IMethodSymbol> GetPublicConstructors(ITypeSymbol genericType)
     {
         var constructors = genericType
@@ -578,7 +587,7 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
             "GrainAuger.LoadBalancers.KeyByBalancer<T, TKey>"
         ];
     }
-    
+
     private static bool IsLoadBalancerType(ITypeSymbol? symbol)
     {
         var baseTypeName = symbol?.BaseType?.OriginalDefinition.ToDisplayString();
@@ -586,10 +595,10 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         {
             return false;
         }
-        
+
         return GetLoadBalancerTypes().Contains(baseTypeName);
     }
-    
+
     private static ITypeSymbol? GetKeyByKeyType(ITypeSymbol? symbol)
     {
         var baseTypeName = symbol?.BaseType?.OriginalDefinition.ToDisplayString();
@@ -597,10 +606,10 @@ public class GrainAugerSourceGenerator : IIncrementalGenerator
         {
             return symbol!.BaseType!.TypeArguments[1];
         }
-        
+
         return null;
     }
-    
+
     private static bool IsSupportedKeyType(ITypeSymbol typeSymbol)
     {
         return typeSymbol.OriginalDefinition.ToDisplayString() switch

@@ -22,10 +22,11 @@ internal record ProcessNode(
     ImmutableArray<ITypeSymbol> AugerTypes,
     ITypeSymbol OutputType,
     ITypeSymbol OutputKeyType,
-    string StreamNamespace
+    string StreamNamespace,
+    string StreamProvider = ""
 ) : DagNode(
     StreamNamespace,
-    PreviousNode.StreamProvider,
+    StreamProvider == "" ? PreviousNode.StreamProvider : StreamProvider,
     OutputType,
     OutputKeyType
 );
