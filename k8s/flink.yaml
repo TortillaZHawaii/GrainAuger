@@ -1,44 +1,125 @@
-apiVersion: apps/v1
-kind: Deployment
+# Based on https://nightlies.apache.org/flink/flink-docs-master/docs/deployment/resource-providers/standalone/kubernetes/#application-cluster-resource-definitions
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flink-config
+  labels:
+    app: flink
+data:
+  config.yaml: |+
+    jobmanager.rpc.address: flink-jobmanager
+    taskmanager.numberOfTaskSlots: 3
+    blob.server.port: 6124
+    jobmanager.rpc.port: 6123
+    taskmanager.rpc.port: 6122
+    jobmanager.memory.process.size: 1600m
+    taskmanager.memory.process.size: 2100m
+    parallelism.default: 3    
+  log4j-console.properties: |+
+    # This affects logging for both user code and Flink
+    rootLogger.level = INFO
+    rootLogger.appenderRef.console.ref = ConsoleAppender
+    rootLogger.appenderRef.rolling.ref = RollingFileAppender
+
+    # Uncomment this if you want to _only_ change Flink's logging
+    #logger.flink.name = org.apache.flink
+    #logger.flink.level = INFO
+
+    # The following lines keep the log level of common libraries/connectors on
+    # log level INFO. The root logger does not override this. You have to manually
+    # change the log levels here.
+    logger.pekko.name = org.apache.pekko
+    logger.pekko.level = INFO
+    logger.kafka.name= org.apache.kafka
+    logger.kafka.level = INFO
+    logger.hadoop.name = org.apache.hadoop
+    logger.hadoop.level = INFO
+    logger.zookeeper.name = org.apache.zookeeper
+    logger.zookeeper.level = INFO
+
+    # Log all infos to the console
+    appender.console.name = ConsoleAppender
+    appender.console.type = CONSOLE
+    appender.console.layout.type = PatternLayout
+    appender.console.layout.pattern = %d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %-60c %x - %m%n
+
+    # Log all infos in the given rolling file
+    appender.rolling.name = RollingFileAppender
+    appender.rolling.type = RollingFile
+    appender.rolling.append = false
+    appender.rolling.fileName = ${sys:log.file}
+    appender.rolling.filePattern = ${sys:log.file}.%i
+    appender.rolling.layout.type = PatternLayout
+    appender.rolling.layout.pattern = %d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %-60c %x - %m%n
+    appender.rolling.policies.type = Policies
+    appender.rolling.policies.size.type = SizeBasedTriggeringPolicy
+    appender.rolling.policies.size.size=100MB
+    appender.rolling.strategy.type = DefaultRolloverStrategy
+    appender.rolling.strategy.max = 10
+
+    # Suppress the irrelevant (wrong) warnings from the Netty channel handler
+    logger.netty.name = org.jboss.netty.channel.DefaultChannelPipeline
+    logger.netty.level = OFF   
+---
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: flink-jobmanager
-  labels:
-    app: flink-jobmanager
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: flink-jobmanager
   template:
     metadata:
       labels:
-        app: flink-jobmanager
+        app: flink
+        component: jobmanager
     spec:
+      restartPolicy: OnFailure
       containers:
         - name: flink-jobmanager
           image: flinkimg:latest
           imagePullPolicy: Never
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          args: ["standalone-job", "--job-classname", "workload.BenchmarkJob"]
           ports:
             - containerPort: 8081
+              name: ui
             - containerPort: 6123
+              name: rpc
             - containerPort: 6124
-            - containerPort: 6125
-          command: ["/docker-entrypoint.sh"]
-          args: ["standalone-job", "--job-classname", "workload.BenchmarkJob"]
-          env:
-            - name: FLINK_PROPERTIES
-              value: |
-                jobmanager.rpc.address: flink-jobmanager-svc
-                taskmanager.numberOfTaskSlots: 6
-                parallelism.default: 3
+              name: blob
+          livenessProbe:
+            tcpSocket:
+              port: 6123
+            initialDelaySeconds: 30
+            periodSeconds: 60
+          volumeMounts:
+            - name: flink-config-volume
+              mountPath: /opt/flink/conf
+          securityContext:
+            runAsUser: 9999  # refers to user _flink_ from official flink image, change if necessary
+      volumes:
+        - name: flink-config-volume
+          configMap:
+            name: flink-config
+            items:
+              - key: config.yaml
+                path: config.yaml
+              - key: log4j-console.properties
+                path: log4j-console.properties
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: flink-jobmanager-svc
+  name: flink-jobmanager
 spec:
+  type: ClusterIP
   selector:
-    app: flink-jobmanager
+    app: flink
+    component: jobmanager
   ports:
     - name: rpc
       port: 6123
@@ -46,31 +127,40 @@ spec:
       port: 6124
     - name: query
       port: 6125
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flink-jobmanager-ui
+spec:
+  type: LoadBalancer
+  selector:
+    app: flink
+    component: jobmanager
+  ports:
     - name: ui
       port: 8081
-  type: LoadBalancer
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: flink-taskmanager
-  labels:
-    app: flink
 spec:
   replicas: 3
   selector:
     matchLabels:
       app: flink
+      component: taskmanager
   template:
     metadata:
       labels:
         app: flink
+        component: taskmanager
     spec:
       containers:
-        - name: flink-taskmanager
+        - name: taskmanager
           image: flinkimg:latest
           imagePullPolicy: Never
-          command: ["/docker-entrypoint.sh"]
           args: ["taskmanager"]
           resources:
             requests:
@@ -79,10 +169,25 @@ spec:
             limits:
               cpu: 2500m
               memory: 2500Mi
-          env:
-            - name: FLINK_PROPERTIES
-              value: |
-                jobmanager.rpc.address: flink-jobmanager-svc
-                taskmanager.numberOfTaskSlots: 6
-                parallelism.default: 3
-                taskmanager.memory.process.size: 2300m
+          ports:
+          - containerPort: 6122
+            name: rpc
+          livenessProbe:
+            tcpSocket:
+              port: 6122
+            initialDelaySeconds: 30
+            periodSeconds: 60
+          volumeMounts:
+            - name: flink-config-volume
+              mountPath: /opt/flink/conf/
+          securityContext:
+            runAsUser: 9999  # refers to user _flink_ from official flink image, change if necessary
+      volumes:
+        - name: flink-config-volume
+          configMap:
+            name: flink-config
+            items:
+            - key: config.yaml
+              path: config.yaml
+            - key: log4j-console.properties
+              path: log4j-console.properties

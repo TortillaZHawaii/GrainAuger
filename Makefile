@@ -11,6 +11,10 @@ kafka-down:
 
 .PHONY: flink
 flink:
+	echo "Setting promiscuous mode on docker0, see https://nightlies.apache.org/flink/flink-docs-master/docs/deployment/resource-providers/standalone/kubernetes/"
+	minikube ssh -n=minikube 'sudo ip link set docker0 promisc on'
+	minikube ssh -n=minikube-m02 'sudo ip link set docker0 promisc on'
+	minikube ssh -n=minikube-m03 'sudo ip link set docker0 promisc on'
 	kubectl delete --ignore-not-found=true -f k8s/flink.yaml
 	docker build -t flinkimg -f ./Examples/Kubernetes/Flink/Dockerfile ./Examples/Kubernetes/Flink
 	minikube image load flinkimg
@@ -22,6 +26,7 @@ flink-down:
 
 .PHONY: auger
 auger:
+	minikube image pull redis
 	kubectl delete --ignore-not-found=true -f k8s/auger.yaml
 	docker build --no-cache -t augerimg -f ./Examples/Kubernetes/CloudNative.Workload/Dockerfile .   
 	minikube image load augerimg
@@ -53,10 +58,10 @@ jsondumper-down:
 
 .PHONY: generate
 generate:
-	kubectl delete --ignore-not-found=true -f k8s/generator/job.yaml
+	kubectl delete --ignore-not-found=true -f k8s/job.yaml
 	docker build --no-cache -t generatorimg -f ./k8s/generator/Dockerfile ./k8s/generator
 	minikube image load generatorimg
-	kubectl apply -f k8s/generator/job.yaml
+	kubectl apply -f k8s/job.yaml
 
 .PHONY: clean
 clean: kafka-down auger-down company-down jsondumper-down flink-down
@@ -70,6 +75,10 @@ bench-flink: kafka company generate flink
 .PHONY: cluster-3cpu-4gb
 cluster-3cpu-4gb:
 	minikube start --nodes 3 --kubernetes-version v1.31 --addons dashboard,metrics-server --cpus 3 --memory 4g
+
+.PHONY: cluster-9cpu-12gb-n1
+cluster-9cpu-12gb-n1:
+	minikube start --nodes 1 --kubernetes-version v1.31 --addons dashboard,metrics-server --cpus 9 --memory 12g
 
 .PHONY: cluster-10cpu-16gb
 cluster-10cpu-16gb:
