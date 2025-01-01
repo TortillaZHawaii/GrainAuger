@@ -79,11 +79,31 @@ func main() {
 	}
 
 	fmt.Println("Creating inputTransactions topic")
+	logAppendTime := "LogAppendTime"
+	cfg := map[string]*string{
+		"message.timestamp.type": &logAppendTime,
+	}
+
 	resCreate, err := broker.CreateTopics(&sarama.CreateTopicsRequest{
 		TopicDetails: map[string]*sarama.TopicDetail{
 			"inputTransactions": {
 				NumPartitions:     3,
 				ReplicationFactor: 1,
+			},
+			"baseOutput": {
+				NumPartitions:     3,
+				ReplicationFactor: 1,
+				ConfigEntries:     cfg,
+			},
+			"remoteOutput": {
+				NumPartitions:     3,
+				ReplicationFactor: 1,
+				ConfigEntries:     cfg,
+			},
+			"palindromeOutput": {
+				NumPartitions:     3,
+				ReplicationFactor: 1,
+				ConfigEntries:     cfg,
 			},
 		},
 		Timeout: time.Minute,
@@ -91,10 +111,10 @@ func main() {
 	if err != nil {
 		fmt.Printf("Failed to create topic: %s\n", err)
 	}
-	if err, ok := resCreate.TopicErrors["inputTransactions"]; ok && err != nil {
-		fmt.Printf("Failed to create topic: %s\n", resCreate.TopicErrors["inputTransactions"])
-	} else {
-		fmt.Printf("Response from creating topic: %+v\n", resCreate)
+	for topic, err := range resCreate.TopicErrors {
+		if err != nil {
+			fmt.Printf("Failed to create topic %s: %s\n", topic, err)
+		}
 	}
 
 	fmt.Printf("Sending transactions to Kafka to topic inputTransactions to broker %s\n", brokerUrl)
